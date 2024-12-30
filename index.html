@@ -24,7 +24,7 @@
             color: white;
             padding: 10px 20px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             position: sticky;
             top: 0;
@@ -36,10 +36,51 @@
             font-size: 24px;
         }
 
+        /* Controls Section */
+        .controls {
+            width: 100%;
+            background-color: #ddd;
+            padding: 10px 0;
+            text-align: center;
+            position: sticky;
+            top: 50px; /* Below the header */
+            z-index: 900;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .controls select,
+        .controls button {
+            padding: 8px 15px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+
+        .controls select {
+            background-color: white;
+        }
+
+        .controls button {
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .controls button:hover {
+            transform: scale(1.1);
+            background-color: #333;
+        }
+
+        /* Search Section */
         .search-container {
             display: flex;
             gap: 10px;
             align-items: center;
+            margin-top: 20px;
         }
 
         .search-container input {
@@ -72,25 +113,13 @@
             transform: scale(1.05);
         }
 
-        /* Language Selector */
-        .language-selector {
-            margin-left: 20px;
-        }
-
-        select {
-            padding: 8px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            outline: none;
-        }
-
         /* Results Section */
         .results {
             margin-top: 30px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
+            width: 80%;
         }
 
         .result-item {
@@ -152,6 +181,10 @@
             background-color: #333;
         }
 
+        body.dark .controls {
+            background-color: #444;
+        }
+
         body.dark .result-item {
             background-color: #333;
             border-color: #555;
@@ -161,23 +194,24 @@
         body.dark .result-content p {
             color: #f4f4f9;
         }
-
     </style>
 </head>
 <body>
     <div class="header">
         <h1 id="pageTitle">YouTube Finder</h1>
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Search for videos...">
-            <button id="searchButton">Search</button>
-        </div>
-        <div class="language-selector">
-            <label for="languageSelect">🌐</label>
-            <select id="languageSelect">
-                <option value="en">English</option>
-                <option value="ko">한국어</option>
-            </select>
-        </div>
+    </div>
+
+    <div class="controls">
+        <select id="languageSelect">
+            <option value="en">English</option>
+            <option value="ko">한국어</option>
+        </select>
+        <button id="modeToggle">Switch to Dark Mode</button>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search for videos...">
+        <button id="searchButton">Search</button>
     </div>
 
     <div class="results" id="results">
@@ -205,7 +239,9 @@
         const searchInput = document.getElementById('searchInput');
         const searchButton = document.getElementById('searchButton');
         const welcomeText = document.getElementById('welcomeText');
+        const modeToggle = document.getElementById('modeToggle');
 
+        // Language Selector
         languageSelect.addEventListener('change', (e) => {
             const selectedLanguage = e.target.value;
             updateLanguage(selectedLanguage);
@@ -219,7 +255,15 @@
             welcomeText.textContent = translation.welcomeText;
         }
 
-        // Set initial language
+        // Mode Toggle
+        modeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            modeToggle.textContent = document.body.classList.contains('dark')
+                ? "Switch to Light Mode"
+                : "Switch to Dark Mode";
+        });
+
+        // Initial Language
         updateLanguage(languageSelect.value);
     </script>
 </body>
