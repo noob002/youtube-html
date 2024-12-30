@@ -234,14 +234,14 @@
                     loadingScreen.style.display = 'none'; // 완전히 숨김
                     document.body.style.visibility = 'visible'; // 페이지 내용 보이기
                 }, 1000); // 애니메이션이 끝나면 페이지 내용 표시
-            }, 500); // 영상 표시 후 0.5초 후에 로딩 화면을 서서히 사라지게 함
+            }, 4000); // 영상 표시 후 4초 후에 로딩 화면을 서서히 사라지게 함
         }
 
         // 페이지 로드 후 로딩 화면 숨기기
         window.onload = function() {
             setTimeout(() => {
                 document.body.style.visibility = 'visible'; // 페이지 내용 보이기
-            }, 3000); // 페이지 로드 후 3초 후에 페이지 내용 표시
+            }, 4000); // 페이지 로드 후 4초 후에 페이지 내용 표시
         };
     </script>
 
