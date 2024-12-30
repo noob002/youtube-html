@@ -74,6 +74,7 @@
         .video-card h3 {
             margin: 0 0 10px;
             font-size: 18px;
+            cursor: pointer;
         }
         .video-card p {
             font-size: 14px;
@@ -164,6 +165,7 @@
             const description = video.snippet.description;
             const thumbnailUrl = video.snippet.thumbnails.high.url;
             const uploadDate = video.snippet.publishedAt;
+            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`; // 유튜브 링크 생성
 
             const videoCard = document.createElement('div');
             videoCard.classList.add('video-card');
@@ -171,7 +173,7 @@
             videoCard.innerHTML = `
                 <img src="${thumbnailUrl}" alt="${title}" onclick="playPreview('${videoId}')">
                 <div class="info">
-                    <h3>${title}</h3>
+                    <h3 onclick="window.open('${videoUrl}', '_blank')">${title}</h3>
                     <p>${description.length > 100 ? description.substring(0, 100) + '...' : description}</p>
                     <p>업로드: ${new Date(uploadDate).toLocaleDateString()}</p>
                 </div>
