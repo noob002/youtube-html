@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 영상 추천</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        #app {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #FF0000;
+        }
+        input[type="text"] {
+            padding: 10px;
+            width: 70%;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #FF0000;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e60000;
+        }
+        #videos {
+            margin-top: 20px;
+        }
+        .video {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .video iframe {
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <h1>YouTube 영상 추천</h1>
+        <input type="text" id="searchQuery" placeholder="검색어를 입력하세요">
+        <button onclick="searchVideos()">검색</button>
+
+        <div id="videos"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js'; // 여기에 자신의 YouTube API 키를 입력하세요
+
+        // 동영상을 검색하는 함수
+        async function searchVideos() {
+            const query = document.getElementById('searchQuery').value;
+            if (!query) {
+                alert('검색어를 입력하세요!');
+                return;
+            }
+
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(query)}&key=${API_KEY}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.items.length === 0) {
+                    document.getElementById('videos').innerHTML = '<p>검색 결과가 없습니다.</p>';
+                    return;
+                }
+
+                let html = '<h3>추천된 동영상</h3>';
+                
+                data.items.forEach(item => {
+                    const videoId = item.id.videoId;
+                    const title = item.snippet.title;
+                    const description = item.snippet.description;
+                    const thumbnailUrl = item.snippet.thumbnails.high.url;
+                    
+                    html += `
+                        <div class="video">
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <h4>${title}</h4>
+                            <p>${description}</p>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('videos').innerHTML = html;
+
+            } catch (error) {
+                console.error(error);
+                alert('동영상을 검색하는 도중 오류가 발생했습니다.');
+            }
+        }
+    </script>
+
+</body>
+</html>
