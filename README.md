@@ -35,4 +35,5 @@ Update Information
   - 더많은 업데이트 예정
  
   ---------
-  버그 발견시 (https://github.com/noob002/youtube-html/pulls)[여기]
+  버그 발견시 [Title](여기)
+  [Google]([https://google.com](https://github.com/noob002/youtube-html/pulls), "github")
