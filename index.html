@@ -146,6 +146,15 @@
                 opacity: 1;
             }
         }
+
+        /* Section title */
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: 30px;
+            color: white;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -159,9 +168,13 @@
         <button id="searchButton">Search</button>
     </div>
 
-    <div class="results" id="results">
-        <!-- Search results will be appended here -->
-    </div>
+    <!-- Section for Trending Videos -->
+    <div class="section-title" id="trendingTitle">Trending Videos</div>
+    <div class="results" id="trendingResults"></div>
+
+    <!-- Section for Search Results -->
+    <div class="section-title" id="searchResultsTitle">Search Results</div>
+    <div class="results" id="results"></div>
 
     <div class="footer">
         <p>Powered by YouTube API</p>
@@ -170,25 +183,65 @@
     <script>
         const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js"; // Replace with your actual YouTube API key
         const resultsContainer = document.getElementById("results");
+        const trendingResultsContainer = document.getElementById("trendingResults");
         const searchInput = document.getElementById("searchInput");
         const searchButton = document.getElementById("searchButton");
+        const trendingTitle = document.getElementById("trendingTitle");
+        const searchResultsTitle = document.getElementById("searchResultsTitle");
 
-        // Function to fetch data from YouTube API
+        // Function to fetch trending videos
+        async function getTrendingVideos() {
+            const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=10&regionCode=US&key=${API_KEY}`;
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("API Request Failed");
+                const data = await response.json();
+                displayTrendingVideos(data.items);
+            } catch (error) {
+                console.error("Error fetching YouTube API:", error);
+                trendingResultsContainer.innerHTML = "<p>Failed to fetch trending videos.</p>";
+            }
+        }
+
+        // Function to fetch search results
         async function searchYouTube(query) {
             const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&type=video&q=${encodeURIComponent(query)}&key=${API_KEY}`;
             try {
                 const response = await fetch(apiUrl);
                 if (!response.ok) throw new Error("API Request Failed");
                 const data = await response.json();
-                displayResults(data.items);
+                displaySearchResults(data.items);
             } catch (error) {
                 console.error("Error fetching YouTube API:", error);
                 alert("There was an issue fetching data from YouTube. Please try again later.");
             }
         }
 
-        // Function to display results
-        function displayResults(items) {
+        // Function to display trending videos
+        function displayTrendingVideos(items) {
+            trendingResultsContainer.innerHTML = ""; // Clear previous results
+            items.forEach((item, index) => {
+                const videoId = item.id;
+                const title = item.snippet.title;
+                const thumbnail = item.snippet.thumbnails.high.url;
+                const videoLink = `https://www.youtube.com/watch?v=${videoId}`;
+
+                const resultItem = document.createElement("div");
+                resultItem.className = "result-item";
+                resultItem.style.animationDelay = `${index * 0.1}s`; // Stagger animation
+                resultItem.innerHTML = `
+                    <img src="${thumbnail}" alt="${title}">
+                    <div class="result-content">
+                        <h3>${title}</h3>
+                        <a href="${videoLink}" target="_blank">Watch on YouTube</a>
+                    </div>
+                `;
+                trendingResultsContainer.appendChild(resultItem);
+            });
+        }
+
+        // Function to display search results
+        function displaySearchResults(items) {
             resultsContainer.innerHTML = ""; // Clear previous results
             if (items.length === 0) {
                 resultsContainer.innerHTML = "<p>No videos found. Try a different search term.</p>";
@@ -230,6 +283,9 @@
                 searchButton.click();
             }
         });
+
+        // Fetch trending videos on page load
+        getTrendingVideos();
     </script>
 </body>
 
