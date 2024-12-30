@@ -84,22 +84,20 @@
             75% { background-color: blue; }
             100% { background-color: purple; }
         }
-        .lang-btn-container {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            display: flex;
+        .rotate-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 1000;
+            animation: rotateEffect 5s linear infinite;
+            visibility: hidden;
         }
-        .lang-btn {
-            padding: 10px;
-            margin-left: 10px;
-            background-color: #333;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .lang-btn:hover {
-            background-color: #555;
+        @keyframes rotateEffect {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         .results {
             display: flex;
@@ -136,11 +134,6 @@
     <h1 id="headerTitle">YouTube 영상 검색</h1>
 </header>
 
-<div class="lang-btn-container">
-    <button class="lang-btn" onclick="changeLanguage('ko')">한국어</button>
-    <button class="lang-btn" onclick="changeLanguage('en')">English</button>
-</div>
-
 <div class="search-container">
     <input type="text" id="query" placeholder="검색어를 입력하세요...">
     <button onclick="searchVideos()" id="searchBtn">검색</button>
@@ -154,15 +147,23 @@
 <!-- Flashing screen -->
 <div class="flashing-screen" id="flashingScreen"></div>
 
+<!-- Rotating screen for "noob002" -->
+<div class="rotate-screen" id="rotateScreen"></div>
+
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
-    let currentLanguage = 'ko';  // Default language
-
+    
     async function searchVideos() {
         const query = document.getElementById('query').value;
 
         if (query.toLowerCase() === 'flash') {
             triggerFlashEasterEgg();
+            return;
+        } else if (query.toLowerCase() === 'noob002') {
+            triggerNoobEasterEgg();
+            return;
+        } else if (query.toLowerCase() === 'never gonna give you up') {
+            window.location.href = 'https://youtu.be/dQw4w9WgXcQ?si=oTYwvWQXY6khS_6r';
             return;
         }
 
@@ -175,11 +176,11 @@
             if (data.items) {
                 displayVideos(data.items);
             } else {
-                alert(getTranslation('noResults'));
+                alert('검색 결과가 없습니다.');
             }
         } catch (error) {
             console.error('Error fetching data:', error);
-            alert(getTranslation('fetchError'));
+            alert('데이터를 불러오는 중 오류가 발생했습니다.');
         }
     }
 
@@ -205,66 +206,24 @@
         }
     }
 
-    function triggerFlashEasterEgg() {
+    function triggerNoobEasterEgg() {
         const darkOverlay = document.getElementById('darkOverlay');
-        const flashingScreen = document.getElementById('flashingScreen');
+        const rotateScreen = document.getElementById('rotateScreen');
 
-        // Step 1: Darken the screen
+        // Step 1: Darken the screen for 5 seconds
         darkOverlay.style.visibility = 'visible';
         darkOverlay.style.opacity = '1';
 
         setTimeout(() => {
-            // Step 2: Show the warning text
             darkOverlay.style.opacity = '0';
             setTimeout(() => {
                 darkOverlay.style.visibility = 'hidden';
-                // Step 3: Start the flashing screen effect
-                flashingScreen.style.visibility = 'visible';
 
-                setTimeout(() => {
-                    // Step 4: Stop the flashing effect
-                    flashingScreen.style.visibility = 'hidden';
-                }, 3000); // 3 seconds of flashing
-            }, 5000); // 5 seconds for the warning text
-        }, 10000); // 10 seconds of dark screen
-    }
+                // Step 2: Start rotating screen effect
+                rotateScreen.style.visibility = 'visible';
+            }, 5000); // 5 seconds
 
-    function changeLanguage(lang) {
-        currentLanguage = lang;
-        const translations = {
-            ko: {
-                headerTitle: 'YouTube 영상 검색',
-                placeholder: '검색어를 입력하세요...',
-                searchBtn: '검색',
-                noResults: '검색 결과가 없습니다.',
-                fetchError: '데이터를 불러오는 중 오류가 발생했습니다.',
-            },
-            en: {
-                headerTitle: 'YouTube Video Search',
-                placeholder: 'Enter search keyword...',
-                searchBtn: 'Search',
-                noResults: 'No results found.',
-                fetchError: 'An error occurred while fetching data.',
-            }
-        };
-
-        document.getElementById('headerTitle').textContent = translations[lang].headerTitle;
-        document.getElementById('query').placeholder = translations[lang].placeholder;
-        document.getElementById('searchBtn').textContent = translations[lang].searchBtn;
-    }
-
-    function getTranslation(key) {
-        const translations = {
-            ko: {
-                noResults: '검색 결과가 없습니다.',
-                fetchError: '데이터를 불러오는 중 오류가 발생했습니다.',
-            },
-            en: {
-                noResults: 'No results found.',
-                fetchError: 'An error occurred while fetching data.',
-            }
-        };
-        return translations[currentLanguage][key];
+        }, 0);
     }
 </script>
 
