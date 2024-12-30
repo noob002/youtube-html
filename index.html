@@ -6,17 +6,14 @@
     <title>YouTube Finder</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* 기본 스타일 */
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f9f9f9;
             color: #333;
-            overflow-x: hidden;
         }
 
-        /* 헤더 스타일 */
         .header {
             position: fixed;
             top: 0;
@@ -39,21 +36,11 @@
             margin: 0;
         }
 
-        .header .theme-toggle {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        /* 메인 콘텐츠 */
         .main-content {
             margin-top: 100px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            text-align: center;
         }
 
         .main-content h2 {
@@ -66,7 +53,6 @@
             gap: 10px;
             align-items: center;
             justify-content: center;
-            margin-top: 20px;
         }
 
         .search-container input {
@@ -93,7 +79,6 @@
             background-color: #c0392b;
         }
 
-        /* 검색 결과 */
         .results {
             margin-top: 40px;
             width: 80%;
@@ -105,7 +90,6 @@
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             text-align: left;
         }
 
@@ -127,38 +111,12 @@
         .result-item a:hover {
             text-decoration: underline;
         }
-
-        /* 다크 모드 */
-        body.dark-mode {
-            background-color: #181818;
-            color: white;
-        }
-
-        body.dark-mode .header {
-            background-color: #000;
-        }
-
-        body.dark-mode .search-container input {
-            background-color: #333;
-            color: white;
-            border: 1px solid #555;
-        }
-
-        body.dark-mode .search-container button {
-            background-color: #555;
-        }
-
-        body.dark-mode .results .result-item {
-            background-color: #282828;
-            border: 1px solid #444;
-        }
     </style>
 </head>
 <body>
     <!-- 헤더 -->
     <div class="header">
         <h1>YouTube Finder</h1>
-        <button class="theme-toggle" id="themeToggle">🌙 다크 모드</button>
     </div>
 
     <!-- 메인 콘텐츠 -->
@@ -172,17 +130,10 @@
     </div>
 
     <script>
+        const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js'; // 제공된 API 키
         const searchButton = document.getElementById('searchButton');
         const searchInput = document.getElementById('searchInput');
         const results = document.getElementById('results');
-        const themeToggle = document.getElementById('themeToggle');
-        const body = document.body;
-
-        // 다크 모드 토글
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            themeToggle.textContent = body.classList.contains('dark-mode') ? '☀️ 라이트 모드' : '🌙 다크 모드';
-        });
 
         // 검색 버튼 클릭 이벤트
         searchButton.addEventListener('click', () => {
@@ -191,25 +142,51 @@
                 alert('검색어를 입력해주세요.');
                 return;
             }
+            searchYouTube(query);
+        });
 
-            // API 호출 로직 (더미 데이터 사용)
-            results.innerHTML = ''; // 기존 결과 초기화
-            const dummyResults = [
-                { title: '예시 영상 1', description: '이것은 예시 설명입니다.', link: 'https://youtube.com' },
-                { title: '예시 영상 2', description: '또 다른 예시 설명입니다.', link: 'https://youtube.com' },
-            ];
+        // 유튜브 API 요청 함수
+        async function searchYouTube(query) {
+            results.innerHTML = '<p>검색 중...</p>';
+            const apiURL = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${API_KEY}`;
 
-            dummyResults.forEach((item) => {
+            try {
+                const response = await fetch(apiURL);
+                if (!response.ok) {
+                    throw new Error('YouTube API 요청 실패');
+                }
+                const data = await response.json();
+                displayResults(data.items);
+            } catch (error) {
+                results.innerHTML = `<p>에러: ${error.message}</p>`;
+            }
+        }
+
+        // 검색 결과 표시 함수
+        function displayResults(items) {
+            results.innerHTML = '';
+            if (items.length === 0) {
+                results.innerHTML = '<p>결과를 찾을 수 없습니다.</p>';
+                return;
+            }
+            items.forEach(item => {
+                const videoId = item.id.videoId;
+                const title = item.snippet.title;
+                const description = item.snippet.description;
+                const thumbnail = item.snippet.thumbnails.medium.url;
+                const videoURL = `https://www.youtube.com/watch?v=${videoId}`;
+
                 const div = document.createElement('div');
                 div.classList.add('result-item');
                 div.innerHTML = `
-                    <h3>${item.title}</h3>
-                    <p>${item.description}</p>
-                    <a href="${item.link}" target="_blank">영상 보기</a>
+                    <img src="${thumbnail}" alt="${title}" style="width: 100%; border-radius: 10px;">
+                    <h3>${title}</h3>
+                    <p>${description}</p>
+                    <a href="${videoURL}" target="_blank">영상 보기</a>
                 `;
                 results.appendChild(div);
             });
-        });
+        }
     </script>
 </body>
 </html>
