@@ -6,10 +6,27 @@
     <title>유튜브 영상 검색</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* 페이지 기본 스타일 */
+        /* 공통 스타일 */
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #2c3e50;
+            --card-bg: #fff;
+            --button-bg: #e74c3c;
+            --button-hover-bg: #c0392b;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --card-bg: #34495e;
+            --button-bg: #e67e22;
+            --button-hover-bg: #d35400;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f5f5f5;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
             display: flex;
@@ -18,13 +35,34 @@
             justify-content: center;
             height: 100vh;
             overflow: auto;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         h1 {
-            color: #2c3e50;
             font-size: 36px;
             font-weight: 600;
             margin-bottom: 20px;
+        }
+
+        /* 테마 전환 버튼 */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--button-hover-bg);
+            transform: scale(1.05);
         }
 
         /* 검색창 및 버튼 스타일 */
@@ -46,17 +84,19 @@
             outline: none;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            background-color: var(--card-bg);
+            color: var(--text-color);
         }
 
         .search-container input:focus {
-            border-color: #e74c3c;
+            border-color: var(--button-bg);
             box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
         }
 
         .search-container button {
             padding: 12px 20px;
             font-size: 18px;
-            background-color: #e74c3c;
+            background-color: var(--button-bg);
             color: white;
             border: none;
             border-radius: 30px;
@@ -67,7 +107,7 @@
         }
 
         .search-container button:hover {
-            background-color: #c0392b;
+            background-color: var(--button-hover-bg);
             transform: scale(1.05);
         }
 
@@ -84,7 +124,7 @@
 
         /* 비디오 카드 스타일 */
         .video-item {
-            background-color: #fff;
+            background-color: var(--card-bg);
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
@@ -107,8 +147,8 @@
             padding: 15px;
             font-size: 18px;
             font-weight: 500;
-            color: #2c3e50;
-            background-color: #f9f9f9;
+            background-color: var(--card-bg);
+            color: var(--text-color);
             border-bottom: 1px solid #ddd;
         }
 
@@ -121,6 +161,8 @@
     </style>
 </head>
 <body>
+
+    <button class="theme-toggle" onclick="toggleTheme()">모드 전환</button>
 
     <h1>유튜브 영상 검색</h1>
     
@@ -136,6 +178,12 @@
     <script>
         // YouTube API 키를 입력하세요
         const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
+
+        // 테마 전환
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute("data-theme");
+            document.body.setAttribute("data-theme", currentTheme === "dark" ? "" : "dark");
+        }
 
         // 유튜브 영상 검색
         function searchVideos() {
