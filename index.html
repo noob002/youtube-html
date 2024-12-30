@@ -4,161 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>유튜브 영상 검색</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* 로딩 화면 스타일 */
+        /* 로딩 화면 */
         #loading {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.8);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
             font-size: 24px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
             color: #333;
-            font-weight: bold;
             opacity: 1;
-            transition: opacity 1s ease-out; /* 서서히 사라지는 효과 */
+            transition: opacity 1s ease-out;
         }
 
-        /* 전체 페이지 스타일 */
+        /* 페이지 기본 스타일 */
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f7f7f7;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
             flex-direction: column;
-            color: #333;
-            position: relative;
-            overflow: auto;
-            visibility: hidden; /* 페이지 내용 숨김 */
-        }
-
-        /* 대각선으로 떨어지는 유튜브 로고 애니메이션 */
-        .youtube-logo {
-            position: fixed;
-            width: 40px;
-            opacity: 0.5;
-            animation: fall 10s linear infinite;
-        }
-
-        /* 눈처럼 떨어지는 애니메이션 */
-        @keyframes fall {
-            0% {
-                top: -50px;
-                left: 50%;
-                opacity: 0.2;
-            }
-            50% {
-                top: 50%;
-                left: 50%;
-                opacity: 0.5;
-            }
-            100% {
-                top: 100%;
-                left: 50%;
-                opacity: 0.2;
-            }
-        }
-
-        /* 제목 스타일 */
-        h1 {
-            color: #333;
-            margin-bottom: 40px;
-            font-size: 36px;
-            font-weight: 500;
-        }
-
-        /* 검색창 스타일 */
-        .search-container {
-            width: 80%;
-            max-width: 700px;
-            display: flex;
+            align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            height: 100vh;
+            overflow: hidden;
+            visibility: hidden;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* 검색창 및 버튼 스타일 */
+        .search-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            width: 100%;
+            max-width: 800px;
         }
 
         .search-container input {
-            width: 80%;
-            padding: 15px;
-            font-size: 16px;
+            width: 75%;
+            padding: 12px 20px;
+            font-size: 18px;
             border-radius: 30px;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             outline: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
         }
 
         .search-container input:focus {
-            border-color: #ff5733;
-            box-shadow: 0 4px 12px rgba(255, 87, 51, 0.2);
+            border-color: #e74c3c;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
         }
 
         .search-container button {
-            width: 15%;
-            padding: 15px;
-            font-size: 16px;
-            background-color: #ff5733;
+            padding: 12px 20px;
+            font-size: 18px;
+            background-color: #e74c3c;
             color: white;
             border: none;
             border-radius: 30px;
             cursor: pointer;
-            margin-left: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s, transform 0.2s;
+            margin-left: 20px;
+            transition: background-color 0.3s ease, transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         .search-container button:hover {
-            background-color: #e14a2b;
+            background-color: #c0392b;
             transform: scale(1.05);
         }
 
-        /* 비디오 리스트 그리드 스타일 */
+        /* 비디오 목록 스타일 */
         .video-list {
-            width: 80%;
-            max-width: 900px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 40px;
             padding: 0 20px;
         }
 
         /* 비디오 카드 스타일 */
         .video-item {
-            background-color: white;
+            background-color: #fff;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .video-item:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
         }
 
         .video-item img {
             width: 100%;
-            height: 100%;
+            height: 200px;
             object-fit: cover;
         }
 
         .video-item .video-title {
             padding: 15px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 500;
-            color: #333;
-            text-align: center;
-            background-color: #f7f7f7;
+            color: #2c3e50;
+            background-color: #f9f9f9;
             border-bottom: 1px solid #ddd;
         }
 
@@ -168,6 +139,21 @@
             color: #777;
             text-align: center;
         }
+
+        /* 애니메이션 효과 */
+        .fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -177,12 +163,12 @@
 
     <h1>유튜브 영상 검색</h1>
     
-    <div class="search-container">
-        <input type="text" id="searchQuery" placeholder="영상 검색...">
+    <div class="search-container fade-in">
+        <input type="text" id="searchQuery" placeholder="검색어를 입력하세요...">
         <button onclick="searchVideos()">검색</button>
     </div>
 
-    <div class="video-list" id="videoList">
+    <div class="video-list fade-in" id="videoList">
         <!-- 검색된 영상 결과가 여기에 표시됩니다. -->
     </div>
 
@@ -198,6 +184,10 @@
                 return;
             }
 
+            // 로딩 화면 보이기
+            const loadingScreen = document.getElementById('loading');
+            loadingScreen.style.display = 'flex'; // 로딩 화면 표시
+
             const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${API_KEY}`;
 
             fetch(url)
@@ -208,6 +198,7 @@
                 .catch(error => {
                     console.error("Error fetching data:", error);
                     alert("영상 검색 중 오류가 발생했습니다.");
+                    loadingScreen.style.display = 'none'; // 로딩 화면 숨기기
                 });
         }
 
@@ -215,6 +206,10 @@
         function displayVideos(videos) {
             const videoList = document.getElementById("videoList");
             videoList.innerHTML = ""; // 이전 검색 결과 초기화
+
+            if (videos.length === 0) {
+                videoList.innerHTML = "<p>검색된 영상이 없습니다.</p>";
+            }
 
             videos.forEach(video => {
                 const videoItem = document.createElement("div");
@@ -231,43 +226,23 @@
 
                 videoList.appendChild(videoItem);
             });
-        }
 
-        // 작은 로고들이 떨어지도록 추가하는 함수
-        function createFallingLogos() {
-            const logoCount = 30; // 로고 개수
-            for (let i = 0; i < logoCount; i++) {
-                const logo = document.createElement("img");
-                logo.src = "https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%28white%29.png";
-                logo.classList.add("youtube-logo");
-                
-                // 애니메이션을 위한 랜덤 값 설정
-                const randomStartPosition = Math.random() * 100;
-                const randomAnimationDuration = Math.random() * 5 + 5; // 5~10초 사이의 랜덤 애니메이션 시간
-                const randomDelay = Math.random() * 5; // 애니메이션 시작 지연 시간
-
-                // 애니메이션을 위한 스타일 설정
-                logo.style.left = `${randomStartPosition}%`;
-                logo.style.animationDuration = `${randomAnimationDuration}s`;
-                logo.style.animationDelay = `${randomDelay}s`;
-
-                document.body.appendChild(logo);
-            }
-        }
-
-        // 페이지 로드 후 로딩 화면 숨기기
-        window.onload = function() {
-            createFallingLogos();
+            // 로딩 화면 숨기기
             setTimeout(() => {
-                const loadingScreen = document.getElementById('loading');
                 loadingScreen.style.opacity = 0; // 서서히 사라지게 설정
                 setTimeout(() => {
                     loadingScreen.style.display = 'none'; // 완전히 숨김
                     document.body.style.visibility = 'visible'; // 페이지 내용 보이기
                 }, 1000); // 애니메이션이 끝나면 페이지 내용 표시
-            }, 500); // 페이지 로드 후 0.5초 후에 로딩 화면을 서서히 사라지게 함
-        };
+            }, 500); // 영상 표시 후 0.5초 후에 로딩 화면을 서서히 사라지게 함
+        }
 
+        // 페이지 로드 후 로딩 화면 숨기기
+        window.onload = function() {
+            setTimeout(() => {
+                document.body.style.visibility = 'visible'; // 페이지 내용 보이기
+            }, 3000); // 페이지 로드 후 3초 후에 페이지 내용 표시
+        };
     </script>
 
 </body>
