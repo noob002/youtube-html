@@ -59,6 +59,9 @@
             width: 300px;
             margin: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateX(-100px);
+            animation: slideIn 0.5s forwards;
         }
         .video-card img {
             width: 100%;
@@ -78,6 +81,17 @@
         .video-card .likes {
             font-size: 14px;
             color: #ff5722;
+        }
+
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
     </style>
 </head>
