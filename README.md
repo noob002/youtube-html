@@ -36,4 +36,4 @@ Update Information
  
   ---------
   버그 발견시 [여기](이동)
-  [여기]([https://google.com](https://github.com/noob002/youtube-html/pulls), "github")
+  [를 눌러 이동]([https://google.com](https://github.com/noob002/youtube-html/pulls), "github")
