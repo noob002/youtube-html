@@ -91,23 +91,6 @@
                 transform: translateX(0);
             }
         }
-
-        /* 비디오 미리보기 스타일 */
-        .video-preview {
-            display: none;
-            width: 300px;
-            height: 169px;
-            background-color: black;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 10;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-        }
     </style>
 </head>
 <body>
@@ -123,20 +106,15 @@
 
 <div class="results" id="results"></div>
 
-<!-- 비디오 미리보기 -->
-<div class="video-preview" id="videoPreview">
-    <iframe id="previewIframe" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</div>
-
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
 
     async function searchVideos() {
         const query = document.getElementById('query').value.trim();
 
-        // Easter Egg Trigger
-        if (query.toLowerCase() === 'error') {
-            triggerEasterEgg();
+        // 특정 검색어에 따른 동작
+        if (query.toLowerCase() === 'never gonna give you up') {
+            window.location.href = 'https://youtu.be/dQw4w9WgXcQ?si=dEJkPWx1E_O1wi_W';
             return;
         }
 
@@ -161,48 +139,6 @@
         }
     }
 
-    function triggerEasterEgg() {
-        const body = document.body;
-        body.style.backgroundColor = 'red';
-        body.style.color = 'white';
-
-        // 화면 흔들림 효과
-        let shaking = 0;
-        const interval = setInterval(() => {
-            shaking += 1;
-            body.style.transform = shaking % 2 === 0 ? 'translateX(-10px)' : 'translateX(10px)';
-            if (shaking > 10) {
-                clearInterval(interval);
-                body.style.transform = 'none';
-            }
-        }, 100);
-
-        // 오류 메시지 표시
-        const errorMessage = document.createElement('div');
-        errorMessage.style.position = 'fixed';
-        errorMessage.style.top = '50%';
-        errorMessage.style.left = '50%';
-        errorMessage.style.transform = 'translate(-50%, -50%)';
-        errorMessage.style.backgroundColor = '#000';
-        errorMessage.style.color = '#fff';
-        errorMessage.style.padding = '20px';
-        errorMessage.style.borderRadius = '10px';
-        errorMessage.style.textAlign = 'center';
-        errorMessage.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.5)';
-        errorMessage.innerHTML = `
-            <h2>🤖 비밀 발견!</h2>
-            <p>이건 오류가 아니라 이스터 에그입니다! 🎉</p>
-        `;
-        body.appendChild(errorMessage);
-
-        // 5초 후 원래 상태로 복귀
-        setTimeout(() => {
-            body.style.backgroundColor = '';
-            body.style.color = '';
-            errorMessage.remove();
-        }, 5000);
-    }
-
     function displayVideos(videos) {
         const resultsContainer = document.getElementById('results');
         resultsContainer.innerHTML = ''; // 이전 검색 결과 지우기
@@ -219,7 +155,7 @@
             videoCard.classList.add('video-card');
 
             videoCard.innerHTML = `
-                <img src="${thumbnailUrl}" alt="${title}" onclick="playPreview('${videoId}')">
+                <img src="${thumbnailUrl}" alt="${title}">
                 <div class="info">
                     <h3 onclick="window.open('${videoUrl}', '_blank')">${title}</h3>
                     <p>${description.length > 100 ? description.substring(0, 100) + '...' : description}</p>
@@ -229,19 +165,6 @@
 
             resultsContainer.appendChild(videoCard);
         }
-    }
-
-    function playPreview(videoId) {
-        const previewContainer = document.getElementById('videoPreview');
-        const iframe = document.getElementById('previewIframe');
-
-        // 10초 동안 자동으로 재생하고 음소거 상태로 설정
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&start=0&end=10`;
-        previewContainer.style.display = 'block';
-
-        setTimeout(() => {
-            previewContainer.style.display = 'none';
-        }, 10000); // 10초 후에 자동으로 미리보기 종료
     }
 </script>
 
