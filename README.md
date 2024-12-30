@@ -33,3 +33,6 @@ Update Information
 
   ---------
   - 더많은 업데이트 예정
+ 
+  ---------
+  버그 발견시 (여기)[https://github.com/noob002/youtube-html/pulls]
