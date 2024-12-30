@@ -1,294 +1,161 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Finder</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>YouTube 영상 검색</title>
     <style>
-        /* Reset and body styles */
         body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #121212;
-            color: #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Header styles */
-        .header {
-            width: 100%;
-            background: linear-gradient(45deg, #e52d27, #b31217);
             color: white;
-            padding: 15px 20px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        .header h1 {
             margin: 0;
-            font-size: 26px;
-            font-weight: 600;
-            text-transform: uppercase;
+            padding: 0;
+            box-sizing: border-box;
         }
-
-        /* Search section */
-        .search-container {
-            margin: 30px auto;
+        header {
+            background-color: #333;
+            padding: 10px 20px;
             text-align: center;
-            width: 100%;
-            max-width: 600px;
         }
-
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .search-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
         .search-container input {
-            width: 70%;
-            padding: 15px;
+            padding: 10px;
             font-size: 16px;
-            border: none;
-            border-radius: 50px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            margin-right: 10px;
-            outline: none;
+            border: 1px solid #333;
+            background-color: #222;
+            color: white;
+            width: 300px;
         }
-
-        .search-container input::placeholder {
+        .search-container button {
+            padding: 10px;
+            margin-left: 10px;
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .search-container button:hover {
+            background-color: #e64a19;
+        }
+        .results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        .video-card {
+            background-color: #333;
+            border-radius: 8px;
+            overflow: hidden;
+            width: 300px;
+            margin: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .video-card img {
+            width: 100%;
+            height: auto;
+        }
+        .video-card .info {
+            padding: 15px;
+        }
+        .video-card h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+        .video-card p {
+            font-size: 14px;
             color: #bbb;
         }
-
-        .search-container button {
-            padding: 12px 30px;
-            font-size: 16px;
-            background-color: #e52d27;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            font-weight: 500;
-        }
-
-        .search-container button:hover {
-            background-color: #b31217;
-        }
-
-        /* Results grid */
-        .results {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1200px;
-            width: 100%;
-        }
-
-        .result-item {
-            border: 1px solid #333;
-            border-radius: 15px;
-            background: #1e1e1e;
-            overflow: hidden;
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
-            transform: translateX(-100%);
-            opacity: 0;
-            animation: slideIn 0.6s forwards ease-out;
-        }
-
-        .result-item img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-
-        .result-content {
-            padding: 15px;
-        }
-
-        .result-content h3 {
-            font-size: 18px;
-            margin: 0 0 10px;
-            color: #f0f0f0;
-        }
-
-        .result-content a {
-            display: inline-block;
-            text-decoration: none;
-            color: #e52d27;
-            margin-top: 10px;
+        .video-card .likes {
             font-size: 14px;
-        }
-
-        .result-content a:hover {
-            text-decoration: underline;
-        }
-
-        /* Footer */
-        .footer {
-            margin: 30px 0;
-            font-size: 14px;
-            color: #777;
-            text-align: center;
-        }
-
-        /* Animations */
-        @keyframes slideIn {
-            from {
-                transform: translateX(-100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        /* Section title */
-        .section-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-top: 30px;
-            color: white;
-            text-align: center;
-        }
-
-        /* Loading bar styles */
-        #loadingBarContainer {
-            width: 100%;
-            height: 5px;
-            background-color: #444;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1001;
-            display: none;
-        }
-
-        #loadingBar {
-            height: 100%;
-            width: 0;
-            background-color: #e52d27;
-            transition: width 0.3s ease-out;
-        }
-
-        /* Smooth fading out of the loading bar */
-        @keyframes loadingBarAnimation {
-            0% {
-                width: 0;
-            }
-
-            30% {
-                width: 30%;
-            }
-
-            60% {
-                width: 60%;
-            }
-
-            100% {
-                width: 100%;
-                opacity: 0;
-            }
+            color: #ff5722;
         }
     </style>
 </head>
-
 <body>
-    <div class="header">
-        <h1>YouTube Finder</h1>
-    </div>
 
-    <!-- Loading Bar -->
-    <div id="loadingBarContainer">
-        <div id="loadingBar"></div>
-    </div>
+<header>
+    <h1>YouTube 영상 검색</h1>
+</header>
 
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search for YouTube videos..." />
-        <button id="searchButton">Search</button>
-    </div>
+<div class="search-container">
+    <input type="text" id="query" placeholder="검색어를 입력하세요...">
+    <button onclick="searchVideos()">검색</button>
+</div>
 
-    <!-- Section for Trending Videos -->
-    <div class="section-title" id="trendingTitle">Trending Videos</div>
-    <div class="results" id="trendingResults"></div>
+<div class="results" id="results"></div>
 
-    <!-- Section for Search Results -->
-    <div class="section-title" id="searchResultsTitle">Search Results</div>
-    <div class="results" id="results"></div>
+<script>
+    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js'; // 여기에 자신의 API 키를 입력하세요.
 
-    <div class="footer">
-        <p>Powered by YouTube API</p>
-    </div>
+    async function searchVideos() {
+        const query = document.getElementById('query').value;
+        if (!query) return;
 
-    <script>
-        const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js"; // Replace with your actual YouTube API key
-        const resultsContainer = document.getElementById("results");
-        const trendingResultsContainer = document.getElementById("trendingResults");
-        const searchInput = document.getElementById("searchInput");
-        const searchButton = document.getElementById("searchButton");
-        const trendingTitle = document.getElementById("trendingTitle");
-        const searchResultsTitle = document.getElementById("searchResultsTitle");
-        const loadingBarContainer = document.getElementById("loadingBarContainer");
-        const loadingBar = document.getElementById("loadingBar");
-
-        // Function to show the loading bar
-        function showLoadingBar() {
-            loadingBarContainer.style.display = "block";
-            loadingBar.style.width = "0";
-            setTimeout(() => {
-                loadingBar.style.width = "100%";
-            }, 100);
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${API_KEY}`;
+        
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            displayVideos(data.items);
+        } catch (error) {
+            console.error('Error fetching data:', error);
         }
+    }
 
-        // Function to hide the loading bar
-        function hideLoadingBar() {
-            loadingBar.style.width = "0";
-            setTimeout(() => {
-                loadingBarContainer.style.display = "none";
-            }, 300);
+    async function displayVideos(videos) {
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = ''; // 이전 검색 결과 지우기
+
+        for (const video of videos) {
+            const videoId = video.id.videoId;
+            const title = video.snippet.title;
+            const description = video.snippet.description;
+            const thumbnailUrl = video.snippet.thumbnails.high.url;
+            const uploadDate = video.snippet.publishedAt;
+
+            // 비디오 정보 추가 요청
+            const videoDetails = await getVideoDetails(videoId);
+
+            const videoCard = document.createElement('div');
+            videoCard.classList.add('video-card');
+
+            videoCard.innerHTML = `
+                <img src="${thumbnailUrl}" alt="${title}">
+                <div class="info">
+                    <h3>${title}</h3>
+                    <p>${description.substring(0, 100)}...</p>
+                    <p>업로드: ${new Date(uploadDate).toLocaleDateString()}</p>
+                    <p class="likes">좋아요: ${videoDetails.likes} | 싫어요: ${videoDetails.dislikes}</p>
+                </div>
+            `;
+
+            resultsContainer.appendChild(videoCard);
         }
+    }
 
-        // Function to fetch trending videos
-        async function getTrendingVideos() {
-            showLoadingBar();
-            const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=10&regionCode=US&key=${API_KEY}`;
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error("API Request Failed");
-                const data = await response.json();
-                displayTrendingVideos(data.items);
-            } catch (error) {
-                console.error("Error fetching YouTube API:", error);
-                trendingResultsContainer.innerHTML = "<p>Failed to fetch trending videos.</p>";
-            } finally {
-                hideLoadingBar();
-            }
-        }
+    async function getVideoDetails(videoId) {
+        const url = `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoId}&key=${API_KEY}`;
+        
+        const response = await fetch(url);
+        const data = await response.json();
 
-        // Function to fetch search results
-        async function searchYouTube(query) {
-            showLoadingBar();
-            const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&type=video&q=${encodeURIComponent(query)}&key=${API_KEY}`;
-            try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error("API Request Failed");
-                const data = await response.json();
-                displaySearchResults(data.items);
-            } catch (error) {
-                console.error("Error fetching YouTube API:", error);
-                alert("There was an issue fetching data from YouTube. Please try again later.");
-            } finally {
-                hideLoadingBar();
-            }
-        }
+        const stats = data.items[0].statistics;
+        return {
+            likes: stats.likeCount || 0,
+            dislikes: stats.dislikeCount || 0
+        };
+    }
+</script>
 
-        // Function to display trending videos
-        function displayTrendingVideos(items) {
-            trendingResultsContainer.innerHTML = ""; // Clear previous results
-            items.forEach((item, index) => {
-                const videoId = item.id;
-                const title = item
+</body>
+</html>
