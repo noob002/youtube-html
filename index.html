@@ -80,10 +80,6 @@
             font-size: 14px;
             color: #bbb;
         }
-        .video-card .likes {
-            font-size: 14px;
-            color: #ff5722;
-        }
 
         @keyframes slideIn {
             0% {
@@ -112,23 +108,6 @@
             width: 100%;
             height: 100%;
         }
-
-        /* 오류 메시지 스타일 */
-        #error-message {
-            background-color: #ffcccc;
-            color: red;
-            padding: 10px;
-            margin-top: 20px;
-            border: 2px solid red;
-            display: none;
-            font-size: 18px;
-            text-align: center;
-        }
-
-        .hidden {
-            display: none;
-        }
-
     </style>
 </head>
 <body>
@@ -142,11 +121,6 @@
     <button onclick="searchVideos()">검색</button>
 </div>
 
-<!-- 오류 메시지 -->
-<div id="error-message" class="hidden">
-    <p>오류 발생! 잘못된 입력이 감지되었습니다.</p>
-</div>
-
 <div class="results" id="results"></div>
 
 <!-- 비디오 미리보기 -->
@@ -155,26 +129,24 @@
 </div>
 
 <script>
-    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js'; // 여기에 자신의 API 키를 입력하세요.
+    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
 
     async function searchVideos() {
         const query = document.getElementById('query').value.trim();
-        const errorMessage = document.getElementById('error-message');
 
-        if (!query) return;
-
-        // "error"라는 단어가 입력되었을 경우 오류 메시지를 표시
-        if (query.toLowerCase().includes("error")) {
-            errorMessage.style.display = "block"; // 오류 메시지 표시
-            document.body.style.backgroundColor = "#ffcccc"; // 배경색 변경으로 강조
+        // Easter Egg Trigger
+        if (query.toLowerCase() === 'error') {
+            triggerEasterEgg();
             return;
-        } else {
-            errorMessage.style.display = "none"; // 오류 메시지 숨김
-            document.body.style.backgroundColor = "#121212"; // 기본 배경색
+        }
+
+        if (!query) {
+            alert("검색어를 입력해주세요!");
+            return;
         }
 
         const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${API_KEY}`;
-        
+
         try {
             const response = await fetch(url);
             const data = await response.json();
@@ -189,6 +161,48 @@
         }
     }
 
+    function triggerEasterEgg() {
+        const body = document.body;
+        body.style.backgroundColor = 'red';
+        body.style.color = 'white';
+
+        // 화면 흔들림 효과
+        let shaking = 0;
+        const interval = setInterval(() => {
+            shaking += 1;
+            body.style.transform = shaking % 2 === 0 ? 'translateX(-10px)' : 'translateX(10px)';
+            if (shaking > 10) {
+                clearInterval(interval);
+                body.style.transform = 'none';
+            }
+        }, 100);
+
+        // 오류 메시지 표시
+        const errorMessage = document.createElement('div');
+        errorMessage.style.position = 'fixed';
+        errorMessage.style.top = '50%';
+        errorMessage.style.left = '50%';
+        errorMessage.style.transform = 'translate(-50%, -50%)';
+        errorMessage.style.backgroundColor = '#000';
+        errorMessage.style.color = '#fff';
+        errorMessage.style.padding = '20px';
+        errorMessage.style.borderRadius = '10px';
+        errorMessage.style.textAlign = 'center';
+        errorMessage.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.5)';
+        errorMessage.innerHTML = `
+            <h2>🤖 비밀 발견!</h2>
+            <p>이건 오류가 아니라 이스터 에그입니다! 🎉</p>
+        `;
+        body.appendChild(errorMessage);
+
+        // 5초 후 원래 상태로 복귀
+        setTimeout(() => {
+            body.style.backgroundColor = '';
+            body.style.color = '';
+            errorMessage.remove();
+        }, 5000);
+    }
+
     function displayVideos(videos) {
         const resultsContainer = document.getElementById('results');
         resultsContainer.innerHTML = ''; // 이전 검색 결과 지우기
@@ -199,7 +213,7 @@
             const description = video.snippet.description;
             const thumbnailUrl = video.snippet.thumbnails.high.url;
             const uploadDate = video.snippet.publishedAt;
-            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`; // 유튜브 링크 생성
+            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
             const videoCard = document.createElement('div');
             videoCard.classList.add('video-card');
