@@ -12,6 +12,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            overflow: hidden;
         }
         header {
             background-color: #333;
@@ -23,22 +24,6 @@
         h1 {
             margin: 0;
             font-size: 24px;
-        }
-        .language-switcher {
-            display: flex;
-            gap: 10px;
-        }
-        .language-button {
-            padding: 5px 10px;
-            font-size: 14px;
-            background-color: #444;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .language-button.active {
-            background-color: #ff5722;
         }
         .search-container {
             display: flex;
@@ -64,22 +49,47 @@
         .search-container button:hover {
             background-color: #e64a19;
         }
-        .results {
+        .dark-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            color: white;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            margin: 20px 0;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease;
+        }
+        .flashing-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 1000;
+            animation: flashColors 0.1s infinite;
+            visibility: hidden;
+        }
+        @keyframes flashColors {
+            0% { background-color: red; }
+            25% { background-color: yellow; }
+            50% { background-color: green; }
+            75% { background-color: blue; }
+            100% { background-color: purple; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1 id="title">YouTube 영상 검색</h1>
-    <div class="language-switcher">
-        <button id="btn-korean" class="language-button">한국어</button>
-        <button id="btn-english" class="language-button">English</button>
-    </div>
+    <h1>YouTube 영상 검색</h1>
 </header>
 
 <div class="search-container">
@@ -89,44 +99,83 @@
 
 <div class="results" id="results"></div>
 
-<script>
-    // 언어 설정
-    const title = document.getElementById('title');
-    const searchInput = document.getElementById('query');
-    const searchButton = document.querySelector('.search-container button');
-    const btnKorean = document.getElementById('btn-korean');
-    const btnEnglish = document.getElementById('btn-english');
+<!-- Dark overlay for the warning -->
+<div class="dark-overlay" id="darkOverlay">!!주의 눈 조심!!</div>
 
-    function setLanguage(language) {
-        if (language === 'ko') {
-            title.textContent = "YouTube 영상 검색";
-            searchInput.placeholder = "검색어를 입력하세요...";
-            searchButton.textContent = "검색";
-            btnKorean.classList.add('active');
-            btnEnglish.classList.remove('active');
-        } else if (language === 'en') {
-            title.textContent = "YouTube Video Search";
-            searchInput.placeholder = "Enter a search term...";
-            searchButton.textContent = "Search";
-            btnKorean.classList.remove('active');
-            btnEnglish.classList.add('active');
+<!-- Flashing screen -->
+<div class="flashing-screen" id="flashingScreen"></div>
+
+<script>
+    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
+
+    async function searchVideos() {
+        const query = document.getElementById('query').value;
+
+        if (query.toLowerCase() === 'flash') {
+            triggerFlashEasterEgg();
+            return;
         }
-        localStorage.setItem('language', language);
+
+        // 일반 검색 로직
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${API_KEY}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            if (data.items) {
+                displayVideos(data.items);
+            } else {
+                alert("검색 결과가 없습니다.");
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            alert("데이터를 불러오는 중 오류가 발생했습니다.");
+        }
     }
 
-    // 언어 버튼 클릭 이벤트
-    btnKorean.addEventListener('click', () => setLanguage('ko'));
-    btnEnglish.addEventListener('click', () => setLanguage('en'));
+    function displayVideos(videos) {
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = ''; // 이전 검색 결과 지우기
 
-    // 페이지 로드 시 설정된 언어로 초기화
-    const savedLanguage = localStorage.getItem('language') || 'ko';
-    setLanguage(savedLanguage);
+        for (const video of videos) {
+            const videoId = video.id.videoId;
+            const title = video.snippet.title;
+            const description = video.snippet.description;
+            const thumbnailUrl = video.snippet.thumbnails.high.url;
 
-    // 검색 기능 (예시)
-    function searchVideos() {
-        const query = searchInput.value;
-        if (!query) return alert(savedLanguage === 'ko' ? "검색어를 입력하세요." : "Please enter a search term.");
-        alert(savedLanguage === 'ko' ? `"${query}" 검색 중...` : `Searching for "${query}"...`);
+            const videoCard = document.createElement('div');
+            videoCard.innerHTML = `
+                <img src="${thumbnailUrl}" alt="${title}">
+                <h3>${title}</h3>
+                <p>${description}</p>
+            `;
+
+            resultsContainer.appendChild(videoCard);
+        }
+    }
+
+    function triggerFlashEasterEgg() {
+        const darkOverlay = document.getElementById('darkOverlay');
+        const flashingScreen = document.getElementById('flashingScreen');
+
+        // Step 1: Darken the screen
+        darkOverlay.style.visibility = 'visible';
+        darkOverlay.style.opacity = '1';
+
+        setTimeout(() => {
+            // Step 2: Show the warning text
+            darkOverlay.style.opacity = '0';
+            setTimeout(() => {
+                darkOverlay.style.visibility = 'hidden';
+                // Step 3: Start the flashing screen effect
+                flashingScreen.style.visibility = 'visible';
+
+                setTimeout(() => {
+                    // Step 4: Stop the flashing effect
+                    flashingScreen.style.visibility = 'hidden';
+                }, 3000); // 3 seconds of flashing
+            }, 5000); // 5 seconds for the warning text
+        }, 10000); // 10 seconds of dark screen
     }
 </script>
 
