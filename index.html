@@ -15,12 +15,13 @@
             --button-hover-bg: #c0392b;
         }
 
+        /* 다크 모드 색상 */
         [data-theme="dark"] {
-            --bg-color: #2c3e50;
-            --text-color: #ecf0f1;
-            --card-bg: #34495e;
-            --button-bg: #e67e22;
-            --button-hover-bg: #d35400;
+            --bg-color: #121212; /* 더 어둡고 눈에 편안한 배경색 */
+            --text-color: #b3b3b3; /* 부드러운 텍스트 색상 */
+            --card-bg: #1e1e1e; /* 카드 배경을 더욱 어둡게 */
+            --button-bg: #bb86fc; /* 더 차분한 버튼 색상 */
+            --button-hover-bg: #9b4ffc; /* 버튼의 강조 색상 */
         }
 
         body {
@@ -32,16 +33,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: auto;
+            min-height: 100vh;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         h1 {
             font-size: 36px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
 
         /* 테마 전환 버튼 */
@@ -65,14 +64,19 @@
             transform: scale(1.05);
         }
 
-        /* 검색창 및 버튼 스타일 */
+        /* 검색창 스타일 */
         .search-container {
+            position: sticky;
+            top: 0;
+            background-color: var(--bg-color);
+            z-index: 10;
+            padding: 10px 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 40px;
-            width: 100%;
-            max-width: 800px;
         }
 
         .search-container input {
@@ -118,7 +122,7 @@
             gap: 20px;
             width: 100%;
             max-width: 900px;
-            margin-top: 40px;
+            margin-top: 20px;
             padding: 0 20px;
         }
 
@@ -176,7 +180,6 @@
     </div>
 
     <script>
-        // YouTube API 키를 입력하세요
         const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
 
         // 테마 전환
@@ -185,7 +188,6 @@
             document.body.setAttribute("data-theme", currentTheme === "dark" ? "" : "dark");
         }
 
-        // 유튜브 영상 검색
         function searchVideos() {
             const query = document.getElementById("searchQuery").value;
             if (query.trim() === "") {
@@ -206,10 +208,9 @@
                 });
         }
 
-        // 영상 결과를 화면에 표시
         function displayVideos(videos) {
             const videoList = document.getElementById("videoList");
-            videoList.innerHTML = ""; // 이전 검색 결과 초기화
+            videoList.innerHTML = ""; 
 
             if (videos.length === 0) {
                 videoList.innerHTML = "<p>검색된 영상이 없습니다.</p>";
