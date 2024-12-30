@@ -6,6 +6,25 @@
     <title>유튜브 영상 검색</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        /* 로딩 화면 스타일 */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+            opacity: 1;
+            transition: opacity 1s ease-out; /* 서서히 사라지는 효과 */
+        }
+
         /* 전체 페이지 스타일 */
         body {
             font-family: 'Roboto', sans-serif;
@@ -15,27 +34,26 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             flex-direction: column;
             color: #333;
-            position: relative; /* 로고 애니메이션을 위해 부모 div의 위치를 상대적으로 설정 */
-            overflow: hidden; /* 화면 밖으로 튀어나오는 로고 숨기기 */
+            position: relative;
+            overflow: auto;
+            visibility: hidden; /* 페이지 내용 숨김 */
         }
 
-        /* 대각선으로 내려가는 유튜브 로고 애니메이션 */
+        /* 대각선으로 떨어지는 유튜브 로고 애니메이션 */
         .youtube-logo {
-            position: absolute;
-            top: -150px;
-            left: -150px;
-            width: 200px;
-            opacity: 0.2;
-            animation: fall 10s infinite;
+            position: fixed;
+            width: 40px;
+            opacity: 0.5;
+            animation: fall 10s linear infinite;
         }
 
+        /* 눈처럼 떨어지는 애니메이션 */
         @keyframes fall {
             0% {
-                top: -150px;
-                left: -150px;
+                top: -50px;
+                left: 50%;
                 opacity: 0.2;
             }
             50% {
@@ -45,7 +63,7 @@
             }
             100% {
                 top: 100%;
-                left: 100%;
+                left: 50%;
                 opacity: 0.2;
             }
         }
@@ -154,9 +172,9 @@
 </head>
 <body>
 
-    <!-- 유튜브 로고 -->
-    <img src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%28white%29.png" alt="YouTube Logo" class="youtube-logo">
-    
+    <!-- 로딩 화면 -->
+    <div id="loading">로딩 중...</div>
+
     <h1>유튜브 영상 검색</h1>
     
     <div class="search-container">
@@ -214,6 +232,42 @@
                 videoList.appendChild(videoItem);
             });
         }
+
+        // 작은 로고들이 떨어지도록 추가하는 함수
+        function createFallingLogos() {
+            const logoCount = 30; // 로고 개수
+            for (let i = 0; i < logoCount; i++) {
+                const logo = document.createElement("img");
+                logo.src = "https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%28white%29.png";
+                logo.classList.add("youtube-logo");
+                
+                // 애니메이션을 위한 랜덤 값 설정
+                const randomStartPosition = Math.random() * 100;
+                const randomAnimationDuration = Math.random() * 5 + 5; // 5~10초 사이의 랜덤 애니메이션 시간
+                const randomDelay = Math.random() * 5; // 애니메이션 시작 지연 시간
+
+                // 애니메이션을 위한 스타일 설정
+                logo.style.left = `${randomStartPosition}%`;
+                logo.style.animationDuration = `${randomAnimationDuration}s`;
+                logo.style.animationDelay = `${randomDelay}s`;
+
+                document.body.appendChild(logo);
+            }
+        }
+
+        // 페이지 로드 후 로딩 화면 숨기기
+        window.onload = function() {
+            createFallingLogos();
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading');
+                loadingScreen.style.opacity = 0; // 서서히 사라지게 설정
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none'; // 완전히 숨김
+                    document.body.style.visibility = 'visible'; // 페이지 내용 보이기
+                }, 1000); // 애니메이션이 끝나면 페이지 내용 표시
+            }, 500); // 페이지 로드 후 0.5초 후에 로딩 화면을 서서히 사라지게 함
+        };
+
     </script>
 
 </body>
