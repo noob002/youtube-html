@@ -3,47 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Finder</title>
+    <title>YouTube Search</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f9f9f9;
+            background-color: #f4f4f9;
             color: #333;
-        }
-
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 70px;
-            background-color: #1a1a1a;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            font-weight: 500;
-            margin: 0;
-        }
-
-        .main-content {
-            margin-top: 100px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .main-content h2 {
+        /* Header */
+        .header {
+            width: 100%;
+            background-color: #1a1a1a;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        /* Main Section */
+        .main {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .main h2 {
             font-size: 28px;
             margin-bottom: 20px;
         }
@@ -51,26 +51,25 @@
         .search-container {
             display: flex;
             gap: 10px;
-            align-items: center;
             justify-content: center;
         }
 
         .search-container input {
             width: 300px;
-            padding: 10px 15px;
-            border: 1px solid #ccc;
-            border-radius: 25px;
+            padding: 10px;
             font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             outline: none;
         }
 
         .search-container button {
             padding: 10px 20px;
             font-size: 16px;
-            border: none;
             background-color: #e74c3c;
             color: white;
-            border-radius: 25px;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
@@ -79,110 +78,184 @@
             background-color: #c0392b;
         }
 
+        /* Results Section */
         .results {
-            margin-top: 40px;
-            width: 80%;
+            margin-top: 30px;
         }
 
         .result-item {
+            display: flex;
+            gap: 15px;
             margin-bottom: 20px;
-            padding: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
             background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            text-align: left;
+            align-items: center;
+        }
+
+        .result-item img {
+            width: 120px;
+            height: 90px;
+            border-radius: 5px;
         }
 
         .result-item h3 {
-            font-size: 18px;
-            margin: 0 0 5px;
+            margin: 0;
+            font-size: 16px;
         }
 
         .result-item p {
             margin: 5px 0;
+            font-size: 14px;
             color: #555;
         }
 
         .result-item a {
-            color: #3498db;
             text-decoration: none;
+            color: #3498db;
         }
 
         .result-item a:hover {
             text-decoration: underline;
         }
+
+        /* Dark Mode Button */
+        .theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background-color: #444;
+        }
+
+        /* Dark Mode */
+        body.dark {
+            background-color: #1a1a1a;
+            color: #f4f4f9;
+        }
+
+        body.dark .header {
+            background-color: #333;
+        }
+
+        body.dark .result-item {
+            background-color: #333;
+            border-color: #555;
+        }
+
+        body.dark .result-item h3,
+        body.dark .result-item p {
+            color: #f4f4f9;
+        }
+
+        body.dark .theme-toggle {
+            background-color: #f4f4f9;
+            color: #333;
+        }
     </style>
 </head>
 <body>
-    <!-- 헤더 -->
     <div class="header">
-        <h1>YouTube Finder</h1>
+        <h1>YouTube Search</h1>
     </div>
 
-    <!-- 메인 콘텐츠 -->
-    <div class="main-content">
-        <h2>유튜브 영상 검색</h2>
+    <div class="main">
+        <h2>Find Your Favorite Videos</h2>
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="검색어를 입력하세요">
-            <button id="searchButton">검색</button>
+            <input type="text" id="searchInput" placeholder="Enter your search query">
+            <button id="searchButton">Search</button>
         </div>
         <div class="results" id="results"></div>
     </div>
 
+    <button class="theme-toggle" id="themeToggle">Toggle Theme</button>
+
     <script>
-        const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js'; // 제공된 API 키
+        const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
         const searchButton = document.getElementById('searchButton');
         const searchInput = document.getElementById('searchInput');
         const results = document.getElementById('results');
+        const themeToggle = document.getElementById('themeToggle');
 
-        // 검색 버튼 클릭 이벤트
+        let searchHistory = [];
+
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+        });
+
+        // Search button event
         searchButton.addEventListener('click', () => {
             const query = searchInput.value.trim();
             if (!query) {
-                alert('검색어를 입력해주세요.');
+                alert('Please enter a search query!');
                 return;
             }
-            searchYouTube(query);
+            fetchVideos(query);
         });
 
-        // 유튜브 API 요청 함수
-        async function searchYouTube(query) {
-            results.innerHTML = '<p>검색 중...</p>';
-            const apiURL = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${API_KEY}`;
+        // Fetch recommended videos on load
+        window.onload = fetchRecommendedVideos;
+
+        // Fetch recommended videos
+        async function fetchRecommendedVideos() {
+            results.innerHTML = '<p>Loading recommended videos...</p>';
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&chart=mostPopular&key=${API_KEY}`;
 
             try {
-                const response = await fetch(apiURL);
-                if (!response.ok) {
-                    throw new Error('YouTube API 요청 실패');
-                }
+                const response = await fetch(url);
                 const data = await response.json();
-                displayResults(data.items);
+                displayResults(data.items, 'Recommended Videos');
             } catch (error) {
-                results.innerHTML = `<p>에러: ${error.message}</p>`;
+                results.innerHTML = `<p>Error loading recommendations: ${error.message}</p>`;
             }
         }
 
-        // 검색 결과 표시 함수
-        function displayResults(items) {
-            results.innerHTML = '';
-            if (items.length === 0) {
-                results.innerHTML = '<p>결과를 찾을 수 없습니다.</p>';
+        // Fetch videos based on search query
+        async function fetchVideos(query) {
+            results.innerHTML = '<p>Loading...</p>';
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${API_KEY}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                searchHistory.push({ query, results: data.items });
+                displayResults(data.items, `Search Results for "${query}"`);
+            } catch (error) {
+                results.innerHTML = `<p>Error fetching videos: ${error.message}</p>`;
+            }
+        }
+
+        // Display results
+        function displayResults(videos, title) {
+            results.innerHTML = `<h3>${title}</h3>`;
+            if (!videos.length) {
+                results.innerHTML += '<p>No results found.</p>';
                 return;
             }
-            items.forEach(item => {
-                const videoId = item.id.videoId;
-                const title = item.snippet.title;
-                const description = item.snippet.description;
-                const thumbnail = item.snippet.thumbnails.medium.url;
-                const videoURL = `https://www.youtube.com/watch?v=${videoId}`;
+            videos.forEach(video => {
+                const { videoId } = video.id;
+                const { title, description, thumbnails } = video.snippet;
 
                 const div = document.createElement('div');
-                div.classList.add('result-item');
+                div.className = 'result-item';
                 div.innerHTML = `
-                    <img src="${thumbnail}" alt="${title}" style="width: 100%; border-radius: 10px;">
-                    <h3>${title}</h3>
-                    <p>${description}</p>
-                    <a href="${videoURL}" target="_blank">영상 보기</a>
+                    <img src="${thumbnails.medium.url}" alt="${title}">
+                    <div>
+                        <h3>${title}</h3>
+                        <p>${description}</p>
+                        <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">Watch on YouTube</a>
+                    </div>
                 `;
                 results.appendChild(div);
             });
