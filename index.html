@@ -3,215 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>유튜브 노래 찾기</title>
+    <title>유튜브 영상 검색</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        /* 전체 페이지 스타일 */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f7f7f7;
             margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        .search-container {
+            padding: 0;
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
             align-items: center;
-        }
-        input[type="text"] {
-            padding: 10px;
-            width: 300px;
-            font-size: 16px;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-            outline: none;
-            transition: 0.3s;
-        }
-        input[type="text"]:focus {
-            border-color: #4CAF50;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-left: 10px;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        select {
-            padding: 10px;
-            font-size: 16px;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-            margin-left: 10px;
-            outline: none;
-            transition: 0.3s;
-        }
-        .result-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .video-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin: 10px;
-            width: 280px;
-            text-align: center;
-            overflow: hidden;
-            transition: transform 0.3s;
-        }
-        .video-card img {
-            width: 100%;
-            height: auto;
-            border-bottom: 1px solid #ccc;
-        }
-        .video-card h3 {
-            font-size: 18px;
+            height: 100vh;
+            flex-direction: column;
             color: #333;
-            margin: 10px 0;
+            position: relative; /* 로고 애니메이션을 위해 부모 div의 위치를 상대적으로 설정 */
+            overflow: hidden; /* 화면 밖으로 튀어나오는 로고 숨기기 */
         }
-        .video-card p {
-            color: #777;
-            font-size: 14px;
-            margin-bottom: 15px;
-            padding: 0 10px;
+
+        /* 대각선으로 내려가는 유튜브 로고 애니메이션 */
+        .youtube-logo {
+            position: absolute;
+            top: -150px;
+            left: -150px;
+            width: 200px;
+            opacity: 0.2;
+            animation: fall 10s infinite;
         }
-        .video-card:hover {
-            transform: translateY(-5px);
+
+        @keyframes fall {
+            0% {
+                top: -150px;
+                left: -150px;
+                opacity: 0.2;
+            }
+            50% {
+                top: 50%;
+                left: 50%;
+                opacity: 0.5;
+            }
+            100% {
+                top: 100%;
+                left: 100%;
+                opacity: 0.2;
+            }
         }
-        .no-results {
-            text-align: center;
-            font-size: 18px;
-            color: #555;
-            width: 100%;
-            margin-top: 30px;
+
+        /* 제목 스타일 */
+        h1 {
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 36px;
+            font-weight: 500;
         }
-        .history-container {
-            text-align: center;
-            margin-top: 30px;
+
+        /* 검색창 스타일 */
+        .search-container {
+            width: 80%;
+            max-width: 700px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
         }
-        .history-button {
-            padding: 10px 20px;
+
+        .search-container input {
+            width: 80%;
+            padding: 15px;
             font-size: 16px;
-            background-color: #008CBA;
+            border-radius: 30px;
+            border: 1px solid #ddd;
+            outline: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .search-container input:focus {
+            border-color: #ff5733;
+            box-shadow: 0 4px 12px rgba(255, 87, 51, 0.2);
+        }
+
+        .search-container button {
+            width: 15%;
+            padding: 15px;
+            font-size: 16px;
+            background-color: #ff5733;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 30px;
             cursor: pointer;
-            margin: 5px;
+            margin-left: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, transform 0.2s;
         }
-        .history-button:hover {
-            background-color: #007B9E;
+
+        .search-container button:hover {
+            background-color: #e14a2b;
+            transform: scale(1.05);
+        }
+
+        /* 비디오 리스트 그리드 스타일 */
+        .video-list {
+            width: 80%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+
+        /* 비디오 카드 스타일 */
+        .video-item {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .video-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .video-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-item .video-title {
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            text-align: center;
+            background-color: #f7f7f7;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .video-item .video-description {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: #777;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-    <h1>유튜브 노래 찾기</h1>
-
+    <!-- 유튜브 로고 -->
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%28white%29.png" alt="YouTube Logo" class="youtube-logo">
+    
+    <h1>유튜브 영상 검색</h1>
+    
     <div class="search-container">
-        <input type="text" id="searchQuery" placeholder="검색할 노래를 입력하세요...">
-        <select id="categorySelect">
-            <option value="music">음악</option>
-            <option value="gaming">게임</option>
-            <option value="movies">영화</option>
-            <option value="sports">스포츠</option>
-        </select>
-        <button onclick="searchSong()">검색</button>
+        <input type="text" id="searchQuery" placeholder="영상 검색...">
+        <button onclick="searchVideos()">검색</button>
     </div>
 
-    <div class="result-container" id="resultContainer">
-        <!-- 노래 결과가 여기에 표시됩니다 -->
-    </div>
-
-    <div id="noResults" class="no-results" style="display: none;">
-        검색 결과가 없습니다. 다른 노래를 시도해보세요!
-    </div>
-
-    <div class="history-container">
-        <button class="history-button" onclick="viewSearchHistory()">검색 기록 보기</button>
+    <div class="video-list" id="videoList">
+        <!-- 검색된 영상 결과가 여기에 표시됩니다. -->
     </div>
 
     <script>
-        // 검색한 노래 결과를 localStorage에 저장하는 함수
-        function saveSearchHistory(query, category) {
-            let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
-            const searchEntry = { query, category };
-            if (!searchHistory.some(entry => entry.query === query && entry.category === category)) {
-                searchHistory.push(searchEntry);
-                localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
-            }
-        }
+        // YouTube API 키를 입력하세요
+        const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
 
-        // 저장된 검색 기록을 화면에 표시하는 함수
-        function viewSearchHistory() {
-            const searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
-            if (searchHistory.length === 0) {
-                alert('검색 기록이 없습니다.');
-                return;
-            }
-            alert('검색 기록:\n' + searchHistory.map(entry => `${entry.category}: ${entry.query}`).join('\n'));
-        }
-
-        // 노래 검색 함수
-        function searchSong() {
-            const query = document.getElementById('searchQuery').value.trim();
-            const category = document.getElementById('categorySelect').value;
-            const resultContainer = document.getElementById('resultContainer');
-            const noResults = document.getElementById('noResults');
-
-            // 검색어가 없을 때 경고 메시지
-            if (!query) {
-                alert('검색어를 입력하세요!');
+        // 유튜브 영상 검색
+        function searchVideos() {
+            const query = document.getElementById("searchQuery").value;
+            if (query.trim() === "") {
+                alert("검색어를 입력해주세요.");
                 return;
             }
 
-            // 검색어와 카테고리를 저장하여 나중에 다시 볼 수 있게 합니다
-            saveSearchHistory(query, category);
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${API_KEY}`;
 
-            // 결과 초기화
-            resultContainer.innerHTML = '';
-            noResults.style.display = 'none';
-
-            // 유튜브 검색 API 호출
-            const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=${category === 'music' ? 10 : category === 'gaming' ? 20 : category === 'movies' ? 1 : 17}&key=AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js`;
-
-            fetch(apiUrl)
+            fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.items.length === 0) {
-                        noResults.style.display = 'block';
-                    } else {
-                        data.items.forEach(item => {
-                            const videoCard = document.createElement('div');
-                            videoCard.classList.add('video-card');
-                            videoCard.innerHTML = `
-                                <a href="https://www.youtube.com/watch?v=${item.id.videoId}" target="_blank">
-                                    <img src="${item.snippet.thumbnails.medium.url}" alt="Video Thumbnail">
-                                    <h3>${item.snippet.title}</h3>
-                                    <p>${item.snippet.description.substring(0, 100)}...</p>
-                                </a>
-                            `;
-                            resultContainer.appendChild(videoCard);
-                        });
-                    }
+                    displayVideos(data.items);
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('검색 중 오류가 발생했습니다.');
+                    console.error("Error fetching data:", error);
+                    alert("영상 검색 중 오류가 발생했습니다.");
                 });
+        }
+
+        // 영상 결과를 화면에 표시
+        function displayVideos(videos) {
+            const videoList = document.getElementById("videoList");
+            videoList.innerHTML = ""; // 이전 검색 결과 초기화
+
+            videos.forEach(video => {
+                const videoItem = document.createElement("div");
+                videoItem.classList.add("video-item");
+                videoItem.onclick = () => {
+                    window.open(`https://www.youtube.com/watch?v=${video.id.videoId}`, "_blank");
+                };
+
+                videoItem.innerHTML = `
+                    <img src="${video.snippet.thumbnails.high.url}" alt="${video.snippet.title}">
+                    <div class="video-title">${video.snippet.title}</div>
+                    <div class="video-description">${video.snippet.description.substring(0, 100)}...</div>
+                `;
+
+                videoList.appendChild(videoItem);
+            });
         }
     </script>
 
