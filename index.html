@@ -101,6 +101,33 @@
         .lang-btn:hover {
             background-color: #555;
         }
+        .results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 20px;
+            gap: 20px;
+        }
+        .video-card {
+            background-color: #222;
+            border-radius: 8px;
+            width: 300px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .video-card img {
+            width: 100%;
+            border-bottom: 1px solid #444;
+        }
+        .video-card h3 {
+            font-size: 18px;
+            margin: 10px;
+        }
+        .video-card p {
+            font-size: 14px;
+            margin: 10px;
+            color: #bbb;
+        }
     </style>
 </head>
 <body>
@@ -167,6 +194,7 @@
             const thumbnailUrl = video.snippet.thumbnails.high.url;
 
             const videoCard = document.createElement('div');
+            videoCard.className = 'video-card';
             videoCard.innerHTML = `
                 <img src="${thumbnailUrl}" alt="${title}">
                 <h3>${title}</h3>
