@@ -6,26 +6,6 @@
     <title>유튜브 영상 검색</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* 로딩 화면 */
-        #loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            font-size: 24px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            color: #333;
-            opacity: 1;
-            transition: opacity 1s ease-out;
-        }
-
         /* 페이지 기본 스타일 */
         body {
             font-family: 'Poppins', sans-serif;
@@ -38,7 +18,6 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
-            visibility: hidden;
         }
 
         h1 {
@@ -140,39 +119,48 @@
             text-align: center;
         }
 
-        /* 애니메이션 효과 */
-        .fade-in {
-            animation: fadeIn 1s ease-out forwards;
+        /* 로딩 화면 스타일 */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+            z-index: 9999;
         }
-
-        @keyframes fadeIn {
-            0% {
-                opacity: 0;
-            }
-            100% {
-                opacity: 1;
-            }
-        }
-
     </style>
 </head>
 <body>
 
     <!-- 로딩 화면 -->
-    <div id="loading">로딩 중...</div>
+    <div id="loading">로딩중...</div>
 
     <h1>유튜브 영상 검색</h1>
     
-    <div class="search-container fade-in">
+    <div class="search-container">
         <input type="text" id="searchQuery" placeholder="검색어를 입력하세요...">
         <button onclick="searchVideos()">검색</button>
     </div>
 
-    <div class="video-list fade-in" id="videoList">
+    <div class="video-list" id="videoList">
         <!-- 검색된 영상 결과가 여기에 표시됩니다. -->
     </div>
 
     <script>
+        // 페이지 로딩 후 로딩 화면 제거
+        window.onload = function() {
+            setTimeout(function() {
+                document.getElementById("loading").style.display = "none"; // 로딩 화면 숨기기
+            }, 1500); // 1.5초 후 로딩 화면 숨김
+        };
+
         // YouTube API 키를 입력하세요
         const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
 
@@ -184,10 +172,6 @@
                 return;
             }
 
-            // 로딩 화면 보이기
-            const loadingScreen = document.getElementById('loading');
-            loadingScreen.style.display = 'flex'; // 로딩 화면 표시
-
             const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${API_KEY}`;
 
             fetch(url)
@@ -198,7 +182,6 @@
                 .catch(error => {
                     console.error("Error fetching data:", error);
                     alert("영상 검색 중 오류가 발생했습니다.");
-                    loadingScreen.style.display = 'none'; // 로딩 화면 숨기기
                 });
         }
 
@@ -226,23 +209,7 @@
 
                 videoList.appendChild(videoItem);
             });
-
-            // 로딩 화면 숨기기
-            setTimeout(() => {
-                loadingScreen.style.opacity = 0; // 서서히 사라지게 설정
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none'; // 완전히 숨김
-                    document.body.style.visibility = 'visible'; // 페이지 내용 보이기
-                }, 1000); // 애니메이션이 끝나면 페이지 내용 표시
-            }, 4000); // 영상 표시 후 4초 후에 로딩 화면을 서서히 사라지게 함
         }
-
-        // 페이지 로드 후 로딩 화면 숨기기
-        window.onload = function() {
-            setTimeout(() => {
-                document.body.style.visibility = 'visible'; // 페이지 내용 보이기
-            }, 4000); // 페이지 로드 후 4초 후에 페이지 내용 표시
-        };
     </script>
 
 </body>
