@@ -155,12 +155,56 @@
             color: white;
             text-align: center;
         }
+
+        /* Loading bar styles */
+        #loadingBarContainer {
+            width: 100%;
+            height: 5px;
+            background-color: #444;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1001;
+            display: none;
+        }
+
+        #loadingBar {
+            height: 100%;
+            width: 0;
+            background-color: #e52d27;
+            transition: width 0.3s ease-out;
+        }
+
+        /* Smooth fading out of the loading bar */
+        @keyframes loadingBarAnimation {
+            0% {
+                width: 0;
+            }
+
+            30% {
+                width: 30%;
+            }
+
+            60% {
+                width: 60%;
+            }
+
+            100% {
+                width: 100%;
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="header">
         <h1>YouTube Finder</h1>
+    </div>
+
+    <!-- Loading Bar -->
+    <div id="loadingBarContainer">
+        <div id="loadingBar"></div>
     </div>
 
     <div class="search-container">
@@ -188,9 +232,29 @@
         const searchButton = document.getElementById("searchButton");
         const trendingTitle = document.getElementById("trendingTitle");
         const searchResultsTitle = document.getElementById("searchResultsTitle");
+        const loadingBarContainer = document.getElementById("loadingBarContainer");
+        const loadingBar = document.getElementById("loadingBar");
+
+        // Function to show the loading bar
+        function showLoadingBar() {
+            loadingBarContainer.style.display = "block";
+            loadingBar.style.width = "0";
+            setTimeout(() => {
+                loadingBar.style.width = "100%";
+            }, 100);
+        }
+
+        // Function to hide the loading bar
+        function hideLoadingBar() {
+            loadingBar.style.width = "0";
+            setTimeout(() => {
+                loadingBarContainer.style.display = "none";
+            }, 300);
+        }
 
         // Function to fetch trending videos
         async function getTrendingVideos() {
+            showLoadingBar();
             const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=10&regionCode=US&key=${API_KEY}`;
             try {
                 const response = await fetch(apiUrl);
@@ -200,11 +264,14 @@
             } catch (error) {
                 console.error("Error fetching YouTube API:", error);
                 trendingResultsContainer.innerHTML = "<p>Failed to fetch trending videos.</p>";
+            } finally {
+                hideLoadingBar();
             }
         }
 
         // Function to fetch search results
         async function searchYouTube(query) {
+            showLoadingBar();
             const apiUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&type=video&q=${encodeURIComponent(query)}&key=${API_KEY}`;
             try {
                 const response = await fetch(apiUrl);
@@ -214,6 +281,8 @@
             } catch (error) {
                 console.error("Error fetching YouTube API:", error);
                 alert("There was an issue fetching data from YouTube. Please try again later.");
+            } finally {
+                hideLoadingBar();
             }
         }
 
@@ -222,71 +291,4 @@
             trendingResultsContainer.innerHTML = ""; // Clear previous results
             items.forEach((item, index) => {
                 const videoId = item.id;
-                const title = item.snippet.title;
-                const thumbnail = item.snippet.thumbnails.high.url;
-                const videoLink = `https://www.youtube.com/watch?v=${videoId}`;
-
-                const resultItem = document.createElement("div");
-                resultItem.className = "result-item";
-                resultItem.style.animationDelay = `${index * 0.1}s`; // Stagger animation
-                resultItem.innerHTML = `
-                    <img src="${thumbnail}" alt="${title}">
-                    <div class="result-content">
-                        <h3>${title}</h3>
-                        <a href="${videoLink}" target="_blank">Watch on YouTube</a>
-                    </div>
-                `;
-                trendingResultsContainer.appendChild(resultItem);
-            });
-        }
-
-        // Function to display search results
-        function displaySearchResults(items) {
-            resultsContainer.innerHTML = ""; // Clear previous results
-            if (items.length === 0) {
-                resultsContainer.innerHTML = "<p>No videos found. Try a different search term.</p>";
-                return;
-            }
-            items.forEach((item, index) => {
-                const videoId = item.id.videoId;
-                const title = item.snippet.title;
-                const thumbnail = item.snippet.thumbnails.high.url;
-                const videoLink = `https://www.youtube.com/watch?v=${videoId}`;
-
-                const resultItem = document.createElement("div");
-                resultItem.className = "result-item";
-                resultItem.style.animationDelay = `${index * 0.1}s`; // Stagger animation
-                resultItem.innerHTML = `
-                    <img src="${thumbnail}" alt="${title}">
-                    <div class="result-content">
-                        <h3>${title}</h3>
-                        <a href="${videoLink}" target="_blank">Watch on YouTube</a>
-                    </div>
-                `;
-                resultsContainer.appendChild(resultItem);
-            });
-        }
-
-        // Event listener for search button
-        searchButton.addEventListener("click", () => {
-            const query = searchInput.value.trim();
-            if (query) {
-                searchYouTube(query);
-            } else {
-                alert("Please enter a search term.");
-            }
-        });
-
-        // Optional: Search on Enter key press
-        searchInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                searchButton.click();
-            }
-        });
-
-        // Fetch trending videos on page load
-        getTrendingVideos();
-    </script>
-</body>
-
-</html>
+                const title = item
