@@ -72,12 +72,10 @@
             left: 0;
             width: 100%;
             height: 100%;
+            background-color: black;
             z-index: 1000;
-            animation: flashColors 0.1s infinite;
             visibility: hidden;
-        }
-        .rotating {
-            animation: rotateScreen 0.2s infinite linear;
+            animation: flashColors 0.1s infinite;
         }
         @keyframes flashColors {
             0% { background-color: red; }
@@ -85,10 +83,6 @@
             50% { background-color: green; }
             75% { background-color: blue; }
             100% { background-color: purple; }
-        }
-        @keyframes rotateScreen {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
         .results {
             display: flex;
@@ -133,7 +127,7 @@
 <div class="results" id="results"></div>
 
 <!-- Dark overlay for the warning -->
-<div class="dark-overlay" id="darkOverlay">!!주의 눈 조심!!</div>
+<div class="dark-overlay" id="darkOverlay">!!눈 주의!!</div>
 
 <!-- Flashing screen -->
 <div class="flashing-screen" id="flashingScreen"></div>
@@ -199,37 +193,48 @@
 
     function triggerFlashEasterEgg() {
         isEggActive = true;
+        const darkOverlay = document.getElementById('darkOverlay');
         const flashingScreen = document.getElementById('flashingScreen');
 
-        flashingScreen.style.visibility = 'visible';
+        // Step 1: Screen slowly darkens
+        darkOverlay.style.visibility = 'visible';
+        darkOverlay.style.opacity = '1';
 
         setTimeout(() => {
-            flashingScreen.style.visibility = 'hidden';
-            isEggActive = false; // 플래시 이스터에그 해제
-        }, 3000); // 3초 후 플래시 효과 종료
+            // Step 2: Show the warning text
+            darkOverlay.style.opacity = '0';
+            darkOverlay.style.visibility = 'hidden';
+
+            setTimeout(() => {
+                // Step 3: Start the flashing screen effect
+                flashingScreen.style.visibility = 'visible';
+
+                setTimeout(() => {
+                    // Step 4: Stop the flashing effect
+                    flashingScreen.style.visibility = 'hidden';
+                    isEggActive = false; // 이스터에그 종료
+                }, 3000); // 3 seconds of flashing
+            }, 1000); // 1 second delay before flashing
+        }, 3000); // 3 seconds for dark screen
     }
 
     function triggerNoobEasterEgg() {
-        isEggActive = true; // 이스터에그 활성화 상태
+        isEggActive = true;
         const darkOverlay = document.getElementById('darkOverlay');
 
-        document.body.style.overflow = 'hidden';
         darkOverlay.style.visibility = 'visible';
         darkOverlay.style.opacity = '1';
 
         setTimeout(() => {
             darkOverlay.style.opacity = '0';
             darkOverlay.style.visibility = 'hidden';
-
-            // 화면 회전 효과 추가
             document.body.classList.add('rotating');
 
             setTimeout(() => {
                 document.body.classList.remove('rotating');
-                isEggActive = false; // 이스터에그 해제
-                document.body.style.overflow = 'auto';
-            }, 10000); // 10초 후 정상으로 복구
-        }, 5000); // 5초 동안 어두운 상태 유지
+                isEggActive = false;
+            }, 20000); // Rotate for 20 seconds
+        }, 5000); // 5 seconds of dark screen
     }
 </script>
 
