@@ -111,6 +111,22 @@
             margin: 10px;
             color: #bbb;
         }
+
+        /* Rotation effects */
+        .rotating {
+            animation: rotateScreen 10s linear infinite;
+        }
+        @keyframes rotateScreen {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .slowing-down {
+            animation: slowStop 10s ease-out forwards;
+        }
+        @keyframes slowStop {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
     </style>
 </head>
 <body>
@@ -231,9 +247,13 @@
             document.body.classList.add('rotating');
 
             setTimeout(() => {
-                document.body.classList.remove('rotating');
-                isEggActive = false;
-            }, 20000); // Rotate for 20 seconds
+                document.body.classList.replace('rotating', 'slowing-down');
+
+                setTimeout(() => {
+                    document.body.classList.remove('slowing-down');
+                    isEggActive = false; // 이스터에그 종료
+                }, 10000); // 10 seconds for slow stop
+            }, 10000); // Rotate for 10 seconds
         }, 5000); // 5 seconds of dark screen
     }
 </script>
