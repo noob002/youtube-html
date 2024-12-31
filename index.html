@@ -72,10 +72,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: black;
             z-index: 1000;
             animation: flashColors 0.1s infinite;
             visibility: hidden;
+        }
+        .rotating {
+            animation: rotateScreen 0.2s infinite linear;
         }
         @keyframes flashColors {
             0% { background-color: red; }
@@ -83,6 +85,10 @@
             50% { background-color: green; }
             75% { background-color: blue; }
             100% { background-color: purple; }
+        }
+        @keyframes rotateScreen {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         .results {
             display: flex;
@@ -134,7 +140,7 @@
 
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
-    let isEggActive = false; // 플래시 이스터에그 활성화 상태
+    let isEggActive = false; // 이스터에그 활성화 상태
 
     async function searchVideos() {
         const query = document.getElementById('query').value;
@@ -205,20 +211,25 @@
 
     function triggerNoobEasterEgg() {
         isEggActive = true; // 이스터에그 활성화 상태
-        document.body.style.overflow = 'hidden';
-
         const darkOverlay = document.getElementById('darkOverlay');
 
+        document.body.style.overflow = 'hidden';
         darkOverlay.style.visibility = 'visible';
         darkOverlay.style.opacity = '1';
 
         setTimeout(() => {
             darkOverlay.style.opacity = '0';
+            darkOverlay.style.visibility = 'hidden';
+
+            // 화면 회전 효과 추가
+            document.body.classList.add('rotating');
+
             setTimeout(() => {
-                darkOverlay.style.visibility = 'hidden';
+                document.body.classList.remove('rotating');
                 isEggActive = false; // 이스터에그 해제
-            }, 1000);
-        }, 5000); // 5초 후 원래 상태로 복구
+                document.body.style.overflow = 'auto';
+            }, 10000); // 10초 후 정상으로 복구
+        }, 5000); // 5초 동안 어두운 상태 유지
     }
 </script>
 
