@@ -76,20 +76,38 @@
             margin: 10px;
             color: #bbb;
         }
-        .load-more {
-            text-align: center;
-            margin: 20px;
-        }
-        .load-more button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #ff5722;
+        .dark-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
             color: white;
-            border: none;
-            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease;
         }
-        .load-more button:hover {
-            background-color: #e64a19;
+        .flashing-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            visibility: hidden;
+        }
+        @keyframes flashColors {
+            0% { background-color: red; }
+            25% { background-color: yellow; }
+            50% { background-color: green; }
+            75% { background-color: blue; }
+            100% { background-color: purple; }
         }
     </style>
 </head>
@@ -105,29 +123,33 @@
 </div>
 
 <div class="results" id="results"></div>
-<div class="load-more" id="loadMoreContainer" style="display: none;">
-    <button onclick="loadMoreVideos()">더 보기</button>
-</div>
+<div class="dark-overlay" id="darkOverlay">!!눈 조심!!</div>
+<div class="flashing-screen" id="flashingScreen"></div>
 
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
-    let nextPageToken = null; // 다음 페이지를 가져오기 위한 토큰
-    let currentQuery = '';   // 현재 검색어 저장
+    let nextPageToken = null;
+    let currentQuery = '';
 
     async function searchVideos() {
         const query = document.getElementById('query').value.trim();
-        if (!query) return alert("검색어를 입력해주세요.");
 
-        currentQuery = query; // 검색어 저장
-        nextPageToken = null; // 새 검색 시 토큰 초기화
-        document.getElementById('results').innerHTML = ''; // 이전 결과 삭제
+        if (query === 'noob002') {
+            triggerNoobEasterEgg();
+            return;
+        } else if (query === 'flash') {
+            triggerFlashEasterEgg();
+            return;
+        } else if (query.toLowerCase() === 'never gonna give you up') {
+            triggerRickRollEasterEgg();
+            return;
+        }
+
+        currentQuery = query;
+        nextPageToken = null;
+        document.getElementById('results').innerHTML = '';
 
         await fetchVideos(query);
-    }
-
-    async function loadMoreVideos() {
-        if (!nextPageToken) return;
-        await fetchVideos(currentQuery);
     }
 
     async function fetchVideos(query) {
@@ -145,8 +167,7 @@
 
             if (data.items) {
                 displayVideos(data.items);
-                nextPageToken = data.nextPageToken || null; // 다음 페이지 토큰 저장
-                toggleLoadMoreButton(!!nextPageToken); // "더 보기" 버튼 표시/숨기기
+                nextPageToken = data.nextPageToken || null;
             } else {
                 alert("검색 결과가 없습니다.");
             }
@@ -179,9 +200,59 @@
         }
     }
 
-    function toggleLoadMoreButton(show) {
-        const loadMoreContainer = document.getElementById('loadMoreContainer');
-        loadMoreContainer.style.display = show ? 'block' : 'none';
+    function triggerNoobEasterEgg() {
+        const body = document.body;
+        let angle = 0;
+        let speed = 0.1;
+
+        const interval = setInterval(() => {
+            angle += speed;
+            speed += 0.1;
+            body.style.transform = `rotate(${angle}deg)`;
+
+            if (speed >= 10) {
+                clearInterval(interval);
+
+                setTimeout(() => {
+                    const reverseInterval = setInterval(() => {
+                        speed -= 0.1;
+                        angle += speed;
+                        body.style.transform = `rotate(${angle}deg)`;
+
+                        if (speed <= 0) {
+                            clearInterval(reverseInterval);
+                            body.style.transform = 'rotate(0deg)';
+                        }
+                    }, 16);
+                }, 10000);
+            }
+        }, 16);
+    }
+
+    function triggerFlashEasterEgg() {
+        const darkOverlay = document.getElementById('darkOverlay');
+        const flashingScreen = document.getElementById('flashingScreen');
+
+        darkOverlay.style.visibility = 'visible';
+        darkOverlay.style.opacity = '1';
+
+        setTimeout(() => {
+            darkOverlay.style.opacity = '0';
+            setTimeout(() => {
+                darkOverlay.style.visibility = 'hidden';
+                flashingScreen.style.visibility = 'visible';
+                flashingScreen.style.animation = 'flashColors 0.1s infinite';
+
+                setTimeout(() => {
+                    flashingScreen.style.visibility = 'hidden';
+                    flashingScreen.style.animation = '';
+                }, 3000);
+            }, 500);
+        }, 3000);
+    }
+
+    function triggerRickRollEasterEgg() {
+        window.location.href = 'https://youtu.be/dQw4w9WgXcQ?si=oTYwvWQXY6khS_6r';
     }
 </script>
 
