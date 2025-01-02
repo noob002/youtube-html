@@ -49,41 +49,6 @@
         .search-container button:hover {
             background-color: #e64a19;
         }
-        .dark-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: black;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease;
-        }
-        .flashing-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: black;
-            z-index: 1000;
-            visibility: hidden;
-            animation: flashColors 0.1s infinite;
-        }
-        @keyframes flashColors {
-            0% { background-color: red; }
-            25% { background-color: yellow; }
-            50% { background-color: green; }
-            75% { background-color: blue; }
-            100% { background-color: purple; }
-        }
         .results {
             display: flex;
             flex-wrap: wrap;
@@ -111,21 +76,20 @@
             margin: 10px;
             color: #bbb;
         }
-
-        /* Rotation effects */
-        .rotating {
-            animation: rotateScreen 10s linear infinite;
+        .load-more {
+            text-align: center;
+            margin: 20px;
         }
-        @keyframes rotateScreen {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .load-more button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            cursor: pointer;
         }
-        .slowing-down {
-            animation: slowStop 10s ease-out forwards;
-        }
-        @keyframes slowStop {
-            0% { transform: rotate(360deg); }
-            100% { transform: rotate(0deg); }
+        .load-more button:hover {
+            background-color: #e64a19;
         }
     </style>
 </head>
@@ -137,57 +101,63 @@
 
 <div class="search-container">
     <input type="text" id="query" placeholder="검색어를 입력하세요...">
-    <button onclick="searchVideos()" id="searchBtn">검색</button>
+    <button onclick="searchVideos()">검색</button>
 </div>
 
 <div class="results" id="results"></div>
-
-<!-- Dark overlay for the warning -->
-<div class="dark-overlay" id="darkOverlay">!!눈 주의!!</div>
-
-<!-- Flashing screen -->
-<div class="flashing-screen" id="flashingScreen"></div>
+<div class="load-more" id="loadMoreContainer" style="display: none;">
+    <button onclick="loadMoreVideos()">더 보기</button>
+</div>
 
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
-    let isEggActive = false; // 이스터에그 활성화 상태
+    let nextPageToken = null; // 다음 페이지를 가져오기 위한 토큰
+    let currentQuery = '';   // 현재 검색어 저장
 
     async function searchVideos() {
-        const query = document.getElementById('query').value;
+        const query = document.getElementById('query').value.trim();
+        if (!query) return alert("검색어를 입력해주세요.");
 
-        if (query.toLowerCase() === 'flash' && !isEggActive) {
-            triggerFlashEasterEgg();
-            return;
-        } else if (query.toLowerCase() === 'noob002' && !isEggActive) {
-            triggerNoobEasterEgg();
-            return;
-        } else if (query.toLowerCase() === 'never gonna give you up') {
-            window.location.href = 'https://youtu.be/dQw4w9WgXcQ?si=oTYwvWQXY6khS_6r';
-            return;
-        }
+        currentQuery = query; // 검색어 저장
+        nextPageToken = null; // 새 검색 시 토큰 초기화
+        document.getElementById('results').innerHTML = ''; // 이전 결과 삭제
 
-        document.body.style.overflow = 'auto'; // 검색 시 스크롤 활성화
+        await fetchVideos(query);
+    }
 
-        // 일반 검색 로직
-        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${API_KEY}`;
+    async function loadMoreVideos() {
+        if (!nextPageToken) return;
+        await fetchVideos(currentQuery);
+    }
+
+    async function fetchVideos(query) {
+        const url = new URL('https://www.googleapis.com/youtube/v3/search');
+        url.searchParams.set('part', 'snippet');
+        url.searchParams.set('q', query);
+        url.searchParams.set('type', 'video');
+        url.searchParams.set('maxResults', 50);
+        url.searchParams.set('key', API_KEY);
+        if (nextPageToken) url.searchParams.set('pageToken', nextPageToken);
 
         try {
             const response = await fetch(url);
             const data = await response.json();
+
             if (data.items) {
                 displayVideos(data.items);
+                nextPageToken = data.nextPageToken || null; // 다음 페이지 토큰 저장
+                toggleLoadMoreButton(!!nextPageToken); // "더 보기" 버튼 표시/숨기기
             } else {
-                alert('검색 결과가 없습니다.');
+                alert("검색 결과가 없습니다.");
             }
         } catch (error) {
             console.error('Error fetching data:', error);
-            alert('데이터를 불러오는 중 오류가 발생했습니다.');
+            alert("데이터를 불러오는 중 오류가 발생했습니다.");
         }
     }
 
     function displayVideos(videos) {
         const resultsContainer = document.getElementById('results');
-        resultsContainer.innerHTML = ''; // 이전 검색 결과 지우기
 
         for (const video of videos) {
             const videoId = video.id.videoId;
@@ -198,63 +168,20 @@
             const videoCard = document.createElement('div');
             videoCard.className = 'video-card';
             videoCard.innerHTML = `
-                <img src="${thumbnailUrl}" alt="${title}">
-                <h3>${title}</h3>
-                <p>${description}</p>
+                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
+                    <img src="${thumbnailUrl}" alt="${title}">
+                    <h3>${title}</h3>
+                    <p>${description}</p>
+                </a>
             `;
 
             resultsContainer.appendChild(videoCard);
         }
     }
 
-    function triggerFlashEasterEgg() {
-        isEggActive = true;
-        const darkOverlay = document.getElementById('darkOverlay');
-        const flashingScreen = document.getElementById('flashingScreen');
-
-        // Step 1: Screen slowly darkens
-        darkOverlay.style.visibility = 'visible';
-        darkOverlay.style.opacity = '1';
-
-        setTimeout(() => {
-            // Step 2: Show the warning text
-            darkOverlay.style.opacity = '0';
-            darkOverlay.style.visibility = 'hidden';
-
-            setTimeout(() => {
-                // Step 3: Start the flashing screen effect
-                flashingScreen.style.visibility = 'visible';
-
-                setTimeout(() => {
-                    // Step 4: Stop the flashing effect
-                    flashingScreen.style.visibility = 'hidden';
-                    isEggActive = false; // 이스터에그 종료
-                }, 3000); // 3 seconds of flashing
-            }, 1000); // 1 second delay before flashing
-        }, 3000); // 3 seconds for dark screen
-    }
-
-    function triggerNoobEasterEgg() {
-        isEggActive = true;
-        const darkOverlay = document.getElementById('darkOverlay');
-
-        darkOverlay.style.visibility = 'visible';
-        darkOverlay.style.opacity = '1';
-
-        setTimeout(() => {
-            darkOverlay.style.opacity = '0';
-            darkOverlay.style.visibility = 'hidden';
-            document.body.classList.add('rotating');
-
-            setTimeout(() => {
-                document.body.classList.replace('rotating', 'slowing-down');
-
-                setTimeout(() => {
-                    document.body.classList.remove('slowing-down');
-                    isEggActive = false; // 이스터에그 종료
-                }, 10000); // 10 seconds for slow stop
-            }, 10000); // Rotate for 10 seconds
-        }, 5000); // 5 seconds of dark screen
+    function toggleLoadMoreButton(show) {
+        const loadMoreContainer = document.getElementById('loadMoreContainer');
+        loadMoreContainer.style.display = show ? 'block' : 'none';
     }
 </script>
 
