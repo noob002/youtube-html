@@ -13,6 +13,8 @@
             padding: 0;
             box-sizing: border-box;
             overflow: auto;
+            transform: rotate(0deg); /* 초기 상태 */
+            transition: transform 0.5s ease; /* 회전 복구 시 부드럽게 */
         }
         header {
             background-color: #333;
@@ -24,6 +26,7 @@
         h1 {
             margin: 0;
             font-size: 24px;
+            cursor: pointer; /* 제목 클릭 가능 */
         }
         .search-container {
             display: flex;
@@ -114,7 +117,7 @@
 <body>
 
 <header>
-    <h1 id="headerTitle">YouTube 영상 검색</h1>
+    <h1 id="headerTitle" onclick="resetPage()">YouTube 영상 검색</h1>
 </header>
 
 <div class="search-container">
@@ -203,27 +206,25 @@
     function triggerNoobEasterEgg() {
         const body = document.body;
         let angle = 0;
-        let speed = 0.1; // 초기 속도
-        let increasing = true; // 속도 증가 여부
-        const maxSpeed = 10; // 최대 속도
+        let speed = 0.1;
+        let increasing = true;
+        const maxSpeed = 10;
 
         const interval = setInterval(() => {
             if (increasing) {
-                speed += 0.1; // 점점 가속
-                if (speed >= maxSpeed) {
-                    increasing = false; // 최대 속도 도달 시 감속 시작
-                }
+                speed += 0.1;
+                if (speed >= maxSpeed) increasing = false;
             } else {
-                speed -= 0.1; // 점점 감속
+                speed -= 0.1;
                 if (speed <= 0) {
-                    clearInterval(interval); // 감속 완료 후 애니메이션 종료
-                    body.style.transform = 'rotate(0deg)'; // 원래 상태로 복구
+                    clearInterval(interval);
+                    body.style.transform = 'rotate(0deg)';
                     return;
                 }
             }
             angle += speed;
             body.style.transform = `rotate(${angle}deg)`;
-        }, 16); // 약 60fps
+        }, 16);
     }
 
     function triggerFlashEasterEgg() {
@@ -250,6 +251,15 @@
 
     function triggerRickRollEasterEgg() {
         window.location.href = 'https://youtu.be/dQw4w9WgXcQ?si=oTYwvWQXY6khS_6r';
+    }
+
+    function resetPage() {
+        // 검색어 및 결과 초기화
+        document.getElementById('query').value = '';
+        document.getElementById('results').innerHTML = '';
+
+        // 화면 효과 초기화
+        document.body.style.transform = 'rotate(0deg)';
     }
 </script>
 
