@@ -203,30 +203,27 @@
     function triggerNoobEasterEgg() {
         const body = document.body;
         let angle = 0;
-        let speed = 0.1;
+        let speed = 0.1; // 초기 속도
+        let increasing = true; // 속도 증가 여부
+        const maxSpeed = 10; // 최대 속도
 
         const interval = setInterval(() => {
-            angle += speed;
-            speed += 0.1;
-            body.style.transform = `rotate(${angle}deg)`;
-
-            if (speed >= 10) {
-                clearInterval(interval);
-
-                setTimeout(() => {
-                    const reverseInterval = setInterval(() => {
-                        speed -= 0.1;
-                        angle += speed;
-                        body.style.transform = `rotate(${angle}deg)`;
-
-                        if (speed <= 0) {
-                            clearInterval(reverseInterval);
-                            body.style.transform = 'rotate(0deg)';
-                        }
-                    }, 16);
-                }, 10000);
+            if (increasing) {
+                speed += 0.1; // 점점 가속
+                if (speed >= maxSpeed) {
+                    increasing = false; // 최대 속도 도달 시 감속 시작
+                }
+            } else {
+                speed -= 0.1; // 점점 감속
+                if (speed <= 0) {
+                    clearInterval(interval); // 감속 완료 후 애니메이션 종료
+                    body.style.transform = 'rotate(0deg)'; // 원래 상태로 복구
+                    return;
+                }
             }
-        }, 16);
+            angle += speed;
+            body.style.transform = `rotate(${angle}deg)`;
+        }, 16); // 약 60fps
     }
 
     function triggerFlashEasterEgg() {
