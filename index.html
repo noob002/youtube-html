@@ -82,6 +82,11 @@
             padding: 20px;
             gap: 20px;
         }
+        .game-message {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+        }
         .video-card {
             background-color: #222;
             border-radius: 8px;
@@ -126,7 +131,7 @@
 <body>
 
 <header>
-    <h1 id="headerTitle" onclick="resetPage()">검색 + 오징어게임</h1>
+    <h1 id="headerTitle" onclick="resetPage()">YouTube 영상 검색</h1>
 </header>
 
 <div class="search-container">
@@ -138,6 +143,8 @@
     <button class="star" onclick="startSnowfall()">★</button>
     <button class="triangle" onclick="startSquidGame()">▲</button>
 </div>
+
+<div class="game-message" id="gameMessage"></div>
 
 <div class="results" id="results"></div>
 
@@ -168,6 +175,7 @@
 
         gameState = true;
         const queryInput = document.getElementById('query');
+        const gameMessage = document.getElementById('gameMessage');
         const squidGameText = '무궁화 꽃이 피었습니다';
         const gameDuration = 3000; // 3초 동안 문구 표시
         const resultsContainer = document.getElementById('results');
@@ -175,19 +183,35 @@
         queryInput.disabled = false; // 검색창 활성화
         queryInput.value = ''; // 검색창 초기화
         resultsContainer.innerHTML = ''; // 검색 결과 초기화
+        gameMessage.innerText = ''; // 기존 메시지 초기화
 
-        alert(`${squidGameText} 시작!`);
+        alert('무궁화 꽃이 피었습니다 시작!');
+
+        // 랜덤 타이핑 효과
+        let currentChar = 0;
+        function typeNextChar() {
+            if (currentChar < squidGameText.length) {
+                gameMessage.innerText += squidGameText[currentChar];
+                currentChar++;
+                setTimeout(typeNextChar, Math.random() * 300 + 50); // 글자마다 랜덤 속도
+            } else {
+                endGame(); // 문구가 끝나면 게임 타이머 시작
+            }
+        }
+        typeNextChar();
 
         // 게임 타이머 시작
-        timer = setTimeout(() => {
-            gameState = false; // 게임 종료
-            if (queryInput.value.trim() !== '') {
-                alert('게임 실패! 무궁화 꽃이 피었습니다가 끝난 후 입력 중입니다.');
-                resultsContainer.innerHTML = ''; // 결과 숨기기
-            } else {
-                alert('게임 성공! 검색 결과를 볼 수 있습니다.');
-            }
-        }, gameDuration);
+        function endGame() {
+            timer = setTimeout(() => {
+                gameState = false; // 게임 종료
+                if (queryInput.value.trim() !== '') {
+                    alert('게임 실패! 무궁화 꽃이 피었습니다가 끝난 후 입력 중입니다.');
+                    resultsContainer.innerHTML = ''; // 결과 숨기기
+                } else {
+                    alert('게임 성공! 검색 결과를 볼 수 있습니다.');
+                }
+            }, gameDuration);
+        }
     }
 
     // 검색 상태 체크
@@ -266,6 +290,7 @@
     function resetPage() {
         document.getElementById('query').value = '';
         document.getElementById('results').innerHTML = '';
+        document.getElementById('gameMessage').innerText = '';
         nextPageToken = null;
         gameState = false;
         clearTimeout(timer);
