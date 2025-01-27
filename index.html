@@ -30,7 +30,11 @@
             display: flex;
             justify-content: center;
             padding: 20px;
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
         }
         .search-container input {
             padding: 10px;
@@ -39,6 +43,7 @@
             background-color: #222;
             color: white;
             width: 300px;
+            transition: all 0.3s ease;
         }
         .search-container button {
             padding: 10px;
@@ -47,9 +52,6 @@
             color: white;
             border: none;
             cursor: pointer;
-        }
-        .search-container button:hover {
-            background-color: #e64a19;
         }
         .buttons {
             display: flex;
@@ -75,45 +77,8 @@
             background: linear-gradient(to bottom, #2c3e50, #3498db);
             clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
         }
-        .results {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            padding: 20px;
-            gap: 20px;
-        }
-        .game-message {
-            text-align: center;
-            font-size: 24px;
-            margin: 20px 0;
-        }
-        .video-card {
-            background-color: #222;
-            border-radius: 8px;
-            width: 300px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-        .video-card img {
-            width: 100%;
-            border-bottom: 1px solid #444;
-        }
-        .video-card h3 {
-            font-size: 18px;
-            margin: 10px;
-        }
-        .video-card p {
-            font-size: 14px;
-            margin: 10px;
-            color: #bbb;
-        }
-        @keyframes snow {
-            from {
-                transform: translateY(-100%);
-            }
-            to {
-                transform: translateY(100vh);
-            }
+        .buttons .circle {
+            background: radial-gradient(circle, #ff4081, #f50057);
         }
         .snowflake {
             position: absolute;
@@ -126,6 +91,14 @@
             border-radius: 50%;
             animation: snow linear infinite;
         }
+        @keyframes snow {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(100vh);
+            }
+        }
     </style>
 </head>
 <body>
@@ -134,98 +107,67 @@
     <h1 id="headerTitle" onclick="resetPage()">YouTube 영상 검색</h1>
 </header>
 
-<div class="search-container">
-    <input type="text" id="query" placeholder="검색어를 입력하세요..." oninput="checkGameState()">
+<div class="search-container" id="searchContainer">
+    <input type="text" id="query" placeholder="검색어를 입력하세요...">
     <button onclick="searchVideos()">검색</button>
 </div>
 
-<div class="buttons">
-    <button class="star" onclick="startSnowfall()">★</button>
-    <button class="triangle" onclick="startSquidGame()">▲</button>
+<div class="buttons" id="buttons">
+    <button class="star" id="starButton" onclick="toggleSnowfall()">★</button>
+    <button class="triangle" onclick="removeShapes()">▲</button>
+    <button class="circle" onclick="moveSearch()">●</button>
 </div>
-
-<div class="game-message" id="gameMessage"></div>
 
 <div class="results" id="results"></div>
 
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
-    let nextPageToken = null;
-    let gameState = false; // 오징어 게임 활성화 여부
-    let timer = null; // 게임 타이머
+    let snowfallActive = false;
+    let snowflakes = [];
 
-    // 눈 내리기 기능
-    function startSnowfall() {
-        for (let i = 0; i < 100; i++) {
-            const snowflake = document.createElement('div');
-            snowflake.className = 'snowflake';
-            snowflake.style.left = `${Math.random() * 100}vw`;
-            snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
-            snowflake.style.animationDelay = `${Math.random() * 5}s`;
-            snowflake.style.transform = `translateY(-100%)`;
-            document.body.appendChild(snowflake);
-
-            snowflake.addEventListener('animationend', () => snowflake.remove());
-        }
-    }
-
-    // 오징어 게임 시작
-    function startSquidGame() {
-        if (gameState) return;
-
-        gameState = true;
-        const queryInput = document.getElementById('query');
-        const gameMessage = document.getElementById('gameMessage');
-        const squidGameText = '무궁화 꽃이 피었습니다';
-        const gameDuration = 3000; // 3초 동안 문구 표시
-        const resultsContainer = document.getElementById('results');
-
-        queryInput.disabled = false; // 검색창 활성화
-        queryInput.value = ''; // 검색창 초기화
-        resultsContainer.innerHTML = ''; // 검색 결과 초기화
-        gameMessage.innerText = ''; // 기존 메시지 초기화
-
-        alert('무궁화 꽃이 피었습니다 시작!');
-
-        // 랜덤 타이핑 효과
-        let currentChar = 0;
-        function typeNextChar() {
-            if (currentChar < squidGameText.length) {
-                gameMessage.innerText += squidGameText[currentChar];
-                currentChar++;
-                setTimeout(typeNextChar, Math.random() * 300 + 50); // 글자마다 랜덤 속도
-            } else {
-                endGame(); // 문구가 끝나면 게임 타이머 시작
+    // 눈내리기 시작/중지
+    function toggleSnowfall() {
+        if (snowfallActive) {
+            snowflakes.forEach(flake => flake.remove());
+            snowflakes = [];
+            snowfallActive = false;
+        } else {
+            for (let i = 0; i < 100; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.style.left = `${Math.random() * 100}vw`;
+                snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                snowflake.style.animationDelay = `${Math.random() * 5}s`;
+                document.body.appendChild(snowflake);
+                snowflakes.push(snowflake);
             }
-        }
-        typeNextChar();
-
-        // 게임 타이머 시작
-        function endGame() {
-            timer = setTimeout(() => {
-                gameState = false; // 게임 종료
-                if (queryInput.value.trim() !== '') {
-                    alert('게임 실패! 무궁화 꽃이 피었습니다가 끝난 후 입력 중입니다.');
-                    resultsContainer.innerHTML = ''; // 결과 숨기기
-                } else {
-                    alert('게임 성공! 검색 결과를 볼 수 있습니다.');
-                }
-            }, gameDuration);
+            snowfallActive = true;
         }
     }
 
-    // 검색 상태 체크
-    function checkGameState() {
-        if (gameState) {
-            clearTimeout(timer); // 입력 중이면 게임 실패 처리
-            document.getElementById('results').innerHTML = ''; // 결과 숨기기
-        }
+    // 검색창 위치 이동 및 스타일 변경
+    function moveSearch() {
+        const searchContainer = document.getElementById('searchContainer');
+        const randomTop = Math.random() * 80 + 10; // 10% ~ 90% 높이
+        const randomLeft = Math.random() * 80 + 10; // 10% ~ 90% 너비
+        searchContainer.style.top = `${randomTop}%`;
+        searchContainer.style.left = `${randomLeft}%`;
+
+        // 기괴한 스타일 변경
+        const input = document.getElementById('query');
+        input.style.transform = `rotate(${Math.random() * 30 - 15}deg)`; // -15도 ~ 15도 회전
+        input.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 50%)`; // 무작위 색상
+        input.style.width = `${Math.random() * 200 + 200}px`; // 200px ~ 400px
+    }
+
+    // 도형 버튼 모두 제거
+    function removeShapes() {
+        const buttons = document.getElementById('buttons');
+        buttons.style.display = 'none';
     }
 
     // YouTube 검색
     async function searchVideos() {
-        if (gameState) return; // 게임 진행 중엔 검색 금지
-
         const query = document.getElementById('query').value.trim();
         if (!query) {
             alert('검색어를 입력하세요.');
@@ -242,14 +184,9 @@
         url.searchParams.set('maxResults', 10);
         url.searchParams.set('key', API_KEY);
 
-        if (nextPageToken) {
-            url.searchParams.set('pageToken', nextPageToken);
-        }
-
         try {
             const response = await fetch(url);
             const data = await response.json();
-            nextPageToken = data.nextPageToken || null;
 
             if (data.items) {
                 displayVideos(data.items);
@@ -290,10 +227,11 @@
     function resetPage() {
         document.getElementById('query').value = '';
         document.getElementById('results').innerHTML = '';
-        document.getElementById('gameMessage').innerText = '';
-        nextPageToken = null;
-        gameState = false;
-        clearTimeout(timer);
+        snowfallActive = false;
+        snowflakes.forEach(flake => flake.remove());
+        snowflakes = [];
+        const buttons = document.getElementById('buttons');
+        buttons.style.display = 'flex';
     }
 </script>
 
