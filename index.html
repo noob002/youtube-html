@@ -12,8 +12,8 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            overflow: hidden;
             position: relative;
+            overflow: hidden;
         }
         header {
             background-color: #333;
@@ -94,23 +94,12 @@
             border-radius: 50%;
             animation: snow 5s linear infinite;
         }
-        .snowflake.snowed {
-            animation: snow 10s linear infinite, accumulate 5s forwards;
-        }
         @keyframes snow {
             0% {
                 transform: translateY(-100%);
             }
             100% {
                 transform: translateY(100vh);
-            }
-        }
-        @keyframes accumulate {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(100px); /* 눈이 쌓이는 높이 */
             }
         }
     </style>
@@ -128,6 +117,8 @@
 
 <div class="buttons" id="buttons">
     <button class="star" id="starButton" onclick="toggleSnowfall()">★</button>
+    <button id="triangleButton" onclick="triggerGame()">△</button>
+    <button id="circleButton" onclick="moveSearchBox()">○</button>
 </div>
 
 <div class="results" id="results"></div>
@@ -135,11 +126,12 @@
 <div class="snow-container" id="snowContainer"></div>
 
 <script>
+    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
     let snowfallInterval;
     let snowflakes = [];
-    let snowCount = 0;
     let isSnowing = false;
-    
+
+    // 눈 내리기 기능
     function toggleSnowfall() {
         if (isSnowing) {
             clearInterval(snowfallInterval);
@@ -148,7 +140,7 @@
             snowflakes = [];
         } else {
             isSnowing = true;
-            snowfallInterval = setInterval(createSnowflake, 1000); // 1초마다 눈송이 생성
+            snowfallInterval = setInterval(createSnowflake, 300); // 0.3초마다 눈송이 생성
         }
     }
 
@@ -157,41 +149,116 @@
 
         const snowflake = document.createElement('div');
         snowflake.classList.add('snowflake');
-        snowflake.classList.add('snowed');
-        
         const size = Math.random() * 5 + 5; // 눈송이 크기 랜덤 (5px~10px)
         snowflake.style.width = `${size}px`;
         snowflake.style.height = `${size}px`;
         snowflake.style.left = `${Math.random() * window.innerWidth}px`;
 
-        // 눈송이 바닥에 쌓이기 위한 타이밍
-        snowflake.style.animationDuration = `${Math.random() * 3 + 5}s`; // 눈송이 떨어지는 시간 (5~8초)
-        
         document.getElementById('snowContainer').appendChild(snowflake);
         snowflakes.push(snowflake);
 
         // 눈송이가 떨어지고 바닥에 쌓이도록 애니메이션
         snowflake.addEventListener('animationend', () => {
-            snowflake.classList.add('snowed');
             snowflake.style.animation = 'none'; // 한 번 애니메이션을 끝내고 고정
             snowflake.offsetHeight; // reflow를 트리거
             snowflake.style.animation = 'accumulate 2s forwards'; // 쌓이는 애니메이션
         });
+    }
 
-        snowCount++;
-        if (snowCount > 50) {
-            clearInterval(snowfallInterval); // 일정 개수 이상 눈송이가 떨어지면 멈춤
+    // 게임 시작
+    function triggerGame() {
+        const queryInput = document.getElementById('query');
+        const currentTime = new Date().getTime();
+        const gameMessage = "무궁화 꽃이 피었습니다";
+        let currentChar = 0;
+
+        const gameInterval = setInterval(() => {
+            queryInput.value = gameMessage.substring(0, currentChar);
+            currentChar++;
+
+            if (currentChar > gameMessage.length) {
+                clearInterval(gameInterval);
+                if (queryInput.value === gameMessage) {
+                    searchVideos(); // 검색을 끝내면 검색 결과 표시
+                }
+            }
+        }, Math.random() * 300 + 100); // 랜덤 속도 (100ms ~ 400ms)
+
+        // 검색창에 "무궁화 꽃이 피었습니다" 가 끝난 후에도 타이핑 중이면 결과를 보여주지 않음
+        setTimeout(() => {
+            if (queryInput.value !== gameMessage) {
+                searchVideos(); // 검색어 끝내지 않고도 결과 표시
+            }
+        }, 3000); // 3초 이후에 타이핑 중이면 검색 결과 표시
+    }
+
+    // 검색 기능
+    async function searchVideos() {
+        const query = document.getElementById('query').value.trim();
+
+        if (!query) return;
+
+        const url = new URL('https://www.googleapis.com/youtube/v3/search');
+        url.searchParams.set('part', 'snippet');
+        url.searchParams.set('q', query);
+        url.searchParams.set('type', 'video');
+        url.searchParams.set('maxResults', 10);
+        url.searchParams.set('key', API_KEY);
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.items) {
+                displayVideos(data.items);
+            } else {
+                alert("검색 결과가 없습니다.");
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            alert("데이터를 불러오는 중 오류가 발생했습니다.");
         }
     }
 
-    function searchVideos() {
-        // 여기에 검색 기능을 추가하는 코드
-        console.log("검색 기능을 실행합니다.");
+    function displayVideos(videos) {
+        const resultsContainer = document.getElementById('results');
+        resultsContainer.innerHTML = '';
+
+        videos.forEach(video => {
+            const videoId = video.id.videoId;
+            const title = video.snippet.title;
+            const description = video.snippet.description;
+            const thumbnailUrl = video.snippet.thumbnails.high.url;
+
+            const videoCard = document.createElement('div');
+            videoCard.className = 'video-card';
+            videoCard.innerHTML = `
+                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
+                    <img src="${thumbnailUrl}" alt="${title}">
+                    <h3>${title}</h3>
+                    <p>${description}</p>
+                </a>
+            `;
+
+            resultsContainer.appendChild(videoCard);
+        });
     }
 
+    // 검색창 위치 랜덤 이동
+    function moveSearchBox() {
+        const searchBox = document.getElementById('searchContainer');
+        const randomX = Math.random() * (window.innerWidth - searchBox.offsetWidth);
+        const randomY = Math.random() * (window.innerHeight - searchBox.offsetHeight);
+        
+        searchBox.style.top = `${randomY}px`;
+        searchBox.style.left = `${randomX}px`;
+    }
+
+    // 페이지 초기화
     function resetPage() {
         document.getElementById('query').value = '';
         document.getElementById('results').innerHTML = '';
+        moveSearchBox(); // 검색창 위치 이동
     }
 </script>
 
