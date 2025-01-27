@@ -11,32 +11,26 @@
             color: white;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            position: relative;
             overflow: hidden;
         }
+
         header {
             background-color: #333;
             padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center;
         }
+
         h1 {
             margin: 0;
             font-size: 24px;
-            cursor: pointer;
         }
+
         .search-container {
             display: flex;
             justify-content: center;
             padding: 20px;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            transition: all 0.5s ease;
         }
+
         .search-container input {
             padding: 10px;
             font-size: 16px;
@@ -44,8 +38,8 @@
             background-color: #222;
             color: white;
             width: 300px;
-            transition: all 0.3s ease;
         }
+
         .search-container button {
             padding: 10px;
             margin-left: 10px;
@@ -54,209 +48,150 @@
             border: none;
             cursor: pointer;
         }
-        .buttons {
+
+        .search-container button:hover {
+            background-color: #e64a19;
+        }
+
+        .results {
             display: flex;
-            justify-content: center;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 20px;
             gap: 20px;
-            margin: 20px 0;
         }
-        .buttons button {
-            width: 50px;
-            height: 50px;
-            border: none;
-            cursor: pointer;
-            border-radius: 50%;
-            background-color: #444;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+
+        .video-card {
+            background-color: #222;
+            border-radius: 8px;
+            width: 300px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-        .buttons .star {
-            background: radial-gradient(circle, gold, orange);
-        }
-        .snow-container {
-            position: absolute;
-            top: 0;
-            left: 0;
+
+        .video-card img {
             width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
+            border-bottom: 1px solid #444;
         }
+
+        .video-card h3 {
+            font-size: 18px;
+            margin: 10px;
+        }
+
+        .video-card p {
+            font-size: 14px;
+            margin: 10px;
+            color: #bbb;
+        }
+
         .snowflake {
-            position: absolute;
-            top: -10px;
-            left: 0;
-            width: 10px;
-            height: 10px;
-            background-color: white;
-            opacity: 0.8;
-            border-radius: 50%;
-            animation: snow 5s linear infinite;
+            position: fixed;
+            top: 0;
+            color: white;
+            font-size: 12px;
+            pointer-events: none;
+            animation: fall linear infinite;
         }
-        @keyframes snow {
+
+        @keyframes fall {
             0% {
-                transform: translateY(-100%);
+                transform: translateY(-100px);
             }
             100% {
                 transform: translateY(100vh);
             }
         }
-        @keyframes accumulate {
-            from {
-                transform: translateY(100vh);
+
+        @keyframes fadeOut {
+            0% {
                 opacity: 1;
             }
-            to {
-                transform: translateY(105vh);
+            100% {
                 opacity: 0;
             }
+        }
+
+        .fade-out {
+            animation: fadeOut 2s forwards;
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1 id="headerTitle" onclick="resetPage()">YouTube 영상 검색</h1>
+    <h1>YouTube 영상 검색</h1>
 </header>
 
-<div class="search-container" id="searchContainer">
+<div class="search-container">
     <input type="text" id="query" placeholder="검색어를 입력하세요...">
     <button onclick="searchVideos()">검색</button>
-</div>
-
-<div class="buttons" id="buttons">
-    <button class="star" id="starButton" onclick="toggleSnowfall()">★</button>
-    <button id="triangleButton" onclick="triggerGame()">△</button>
-    <button id="circleButton" onclick="moveSearchBox()">○</button>
+    <button id="toggleSnow" onclick="toggleSnowfall()">❄️</button>
 </div>
 
 <div class="results" id="results"></div>
-
-<div class="snow-container" id="snowContainer"></div>
 
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
     let snowfallInterval;
     let snowflakes = [];
-    let isSnowing = false;
-    let snowRate = 300; // 눈송이 생성 간격 (ms)
 
-    // 눈 내리기 기능
-    function toggleSnowfall() {
-        if (isSnowing) {
-            clearInterval(snowfallInterval);
-            isSnowing = false;
-            snowflakes.forEach(snowflake => snowflake.remove());
-            snowflakes = [];
-        } else {
-            isSnowing = true;
-            snowRate = 300; // 초기 눈송이 간격
-            snowfallInterval = setInterval(() => {
-                createSnowflake();
-                snowRate = Math.max(50, snowRate - 10); // 눈송이 생성 간격 줄이기
-                clearInterval(snowfallInterval);
-                snowfallInterval = setInterval(createSnowflake, snowRate);
-            }, snowRate);
-        }
+    function searchVideos() {
+        const query = document.getElementById('query').value.trim();
+        if (!query) return;
+
+        fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=10&key=${API_KEY}`)
+            .then(response => response.json())
+            .then(data => {
+                const results = document.getElementById('results');
+                results.innerHTML = '';
+
+                data.items.forEach(item => {
+                    const videoCard = document.createElement('div');
+                    videoCard.className = 'video-card';
+                    videoCard.innerHTML = `
+                        <a href="https://www.youtube.com/watch?v=${item.id.videoId}" target="_blank">
+                            <img src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
+                            <h3>${item.snippet.title}</h3>
+                            <p>${item.snippet.description}</p>
+                        </a>
+                    `;
+                    results.appendChild(videoCard);
+                });
+            })
+            .catch(error => console.error('Error fetching videos:', error));
     }
 
     function createSnowflake() {
-        if (!isSnowing) return;
-
         const snowflake = document.createElement('div');
-        snowflake.classList.add('snowflake');
-        const size = Math.random() * 5 + 5; // 눈송이 크기 랜덤 (5px~10px)
-        snowflake.style.width = `${size}px`;
-        snowflake.style.height = `${size}px`;
-        snowflake.style.left = `${Math.random() * window.innerWidth}px`;
+        snowflake.className = 'snowflake';
+        snowflake.textContent = '❄';
+        snowflake.style.left = `${Math.random() * 100}vw`;
+        snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
+        snowflake.style.fontSize = `${Math.random() * 10 + 10}px`;
 
-        document.getElementById('snowContainer').appendChild(snowflake);
+        document.body.appendChild(snowflake);
         snowflakes.push(snowflake);
 
-        // 눈송이가 떨어지고 바닥에 쌓이도록 애니메이션
-        snowflake.addEventListener('animationend', () => {
-            snowflake.style.animation = 'none'; // 애니메이션 중단 후 고정
-            snowflake.style.position = 'absolute';
-            snowflake.style.bottom = '0px'; // 바닥에 고정
-        });
-    }
-
-    // 게임 시작
-    function triggerGame() {
-        document.body.style.backgroundColor = 'red';
         setTimeout(() => {
-            document.body.style.backgroundColor = '#121212'; // 원래 색으로 복구
-        }, 3000);
+            snowflake.classList.add('fade-out');
+            snowflake.addEventListener('animationend', () => {
+                document.body.removeChild(snowflake);
+                snowflakes = snowflakes.filter(s => s !== snowflake);
+            });
+        }, 5000);
     }
 
-    // 검색 기능
-    async function searchVideos() {
-        const query = document.getElementById('query').value.trim();
-
-        if (!query) return;
-
-        const url = new URL('https://www.googleapis.com/youtube/v3/search');
-        url.searchParams.set('part', 'snippet');
-        url.searchParams.set('q', query);
-        url.searchParams.set('type', 'video');
-        url.searchParams.set('maxResults', 10);
-        url.searchParams.set('key', API_KEY);
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.items) {
-                displayVideos(data.items);
-            } else {
-                alert("검색 결과가 없습니다.");
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            alert("데이터를 불러오는 중 오류가 발생했습니다.");
+    function toggleSnowfall() {
+        const button = document.getElementById('toggleSnow');
+        if (snowfallInterval) {
+            clearInterval(snowfallInterval);
+            snowfallInterval = null;
+            button.textContent = '❄️';
+        } else {
+            snowfallInterval = setInterval(createSnowflake, 200);
+            button.textContent = '🛑';
         }
-    }
-
-    function displayVideos(videos) {
-        const resultsContainer = document.getElementById('results');
-        resultsContainer.innerHTML = '';
-
-        videos.forEach(video => {
-            const videoId = video.id.videoId;
-            const title = video.snippet.title;
-            const description = video.snippet.description;
-            const thumbnailUrl = video.snippet.thumbnails.high.url;
-
-            const videoCard = document.createElement('div');
-            videoCard.className = 'video-card';
-            videoCard.innerHTML = `
-                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
-                    <img src="${thumbnailUrl}" alt="${title}">
-                    <h3>${title}</h3>
-                    <p>${description}</p>
-                </a>
-            `;
-
-            resultsContainer.appendChild(videoCard);
-        });
-    }
-
-    // 검색창 랜덤 이동
-    function moveSearchBox() {
-        const searchBox = document.getElementById('searchContainer');
-        const randomX = Math.random() * (window.innerWidth - searchBox.offsetWidth);
-        const randomY = Math.random() * (window.innerHeight - searchBox.offsetHeight);
-        
-        searchBox.style.top = `${randomY}px`;
-        searchBox.style.left = `${randomX}px`;
-    }
-
-    // 페이지 초기화
-    function resetPage() {
-        document.getElementById('query').value = '';
-        document.getElementById('results').innerHTML = '';
-        moveSearchBox(); // 검색창 위치 이동
     }
 </script>
 
