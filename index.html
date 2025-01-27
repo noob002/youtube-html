@@ -40,6 +40,7 @@
             background-color: #222;
             color: white;
             width: 300px;
+            transition: all 0.3s ease;
         }
         .search-container button {
             padding: 10px;
@@ -111,6 +112,30 @@
             50% { background-color: green; }
             75% { background-color: blue; }
             100% { background-color: purple; }
+        }
+        
+        /* 입력 이펙트 관련 스타일 */
+        @keyframes typingEffect {
+            0% {
+                text-shadow: 0 0 5px #ff5722, 0 0 10px #ff5722, 0 0 20px #ff5722, 0 0 30px #ff5722;
+            }
+            50% {
+                text-shadow: 0 0 10px #e64a19, 0 0 20px #e64a19, 0 0 40px #e64a19, 0 0 60px #e64a19;
+            }
+            100% {
+                text-shadow: 0 0 5px #ff5722, 0 0 10px #ff5722, 0 0 20px #ff5722, 0 0 30px #ff5722;
+            }
+        }
+        .search-container input:focus {
+            outline: none;
+            animation: typingEffect 1s infinite alternate;
+        }
+        .search-container input::placeholder {
+            color: #aaa;
+            transition: color 0.5s ease;
+        }
+        .search-container input:focus::placeholder {
+            color: transparent;
         }
     </style>
 </head>
