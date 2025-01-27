@@ -102,6 +102,16 @@
                 transform: translateY(100vh);
             }
         }
+        @keyframes accumulate {
+            from {
+                transform: translateY(100vh);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(105vh);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -130,6 +140,7 @@
     let snowfallInterval;
     let snowflakes = [];
     let isSnowing = false;
+    let snowRate = 300; // 눈송이 생성 간격 (ms)
 
     // 눈 내리기 기능
     function toggleSnowfall() {
@@ -140,7 +151,13 @@
             snowflakes = [];
         } else {
             isSnowing = true;
-            snowfallInterval = setInterval(createSnowflake, 300); // 0.3초마다 눈송이 생성
+            snowRate = 300; // 초기 눈송이 간격
+            snowfallInterval = setInterval(() => {
+                createSnowflake();
+                snowRate = Math.max(50, snowRate - 10); // 눈송이 생성 간격 줄이기
+                clearInterval(snowfallInterval);
+                snowfallInterval = setInterval(createSnowflake, snowRate);
+            }, snowRate);
         }
     }
 
@@ -159,37 +176,18 @@
 
         // 눈송이가 떨어지고 바닥에 쌓이도록 애니메이션
         snowflake.addEventListener('animationend', () => {
-            snowflake.style.animation = 'none'; // 한 번 애니메이션을 끝내고 고정
-            snowflake.offsetHeight; // reflow를 트리거
-            snowflake.style.animation = 'accumulate 2s forwards'; // 쌓이는 애니메이션
+            snowflake.style.animation = 'none'; // 애니메이션 중단 후 고정
+            snowflake.style.position = 'absolute';
+            snowflake.style.bottom = '0px'; // 바닥에 고정
         });
     }
 
     // 게임 시작
     function triggerGame() {
-        const queryInput = document.getElementById('query');
-        const currentTime = new Date().getTime();
-        const gameMessage = "무궁화 꽃이 피었습니다";
-        let currentChar = 0;
-
-        const gameInterval = setInterval(() => {
-            queryInput.value = gameMessage.substring(0, currentChar);
-            currentChar++;
-
-            if (currentChar > gameMessage.length) {
-                clearInterval(gameInterval);
-                if (queryInput.value === gameMessage) {
-                    searchVideos(); // 검색을 끝내면 검색 결과 표시
-                }
-            }
-        }, Math.random() * 300 + 100); // 랜덤 속도 (100ms ~ 400ms)
-
-        // 검색창에 "무궁화 꽃이 피었습니다" 가 끝난 후에도 타이핑 중이면 결과를 보여주지 않음
+        document.body.style.backgroundColor = 'red';
         setTimeout(() => {
-            if (queryInput.value !== gameMessage) {
-                searchVideos(); // 검색어 끝내지 않고도 결과 표시
-            }
-        }, 3000); // 3초 이후에 타이핑 중이면 검색 결과 표시
+            document.body.style.backgroundColor = '#121212'; // 원래 색으로 복구
+        }, 3000);
     }
 
     // 검색 기능
@@ -244,7 +242,7 @@
         });
     }
 
-    // 검색창 위치 랜덤 이동
+    // 검색창 랜덤 이동
     function moveSearchBox() {
         const searchBox = document.getElementById('searchContainer');
         const randomX = Math.random() * (window.innerWidth - searchBox.offsetWidth);
