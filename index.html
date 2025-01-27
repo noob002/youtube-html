@@ -12,7 +12,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            overflow: auto;
+            overflow: hidden;
         }
         header {
             background-color: #333;
@@ -39,7 +39,6 @@
             background-color: #222;
             color: white;
             width: 300px;
-            transition: all 0.3s ease;
         }
         .search-container button {
             padding: 10px;
@@ -51,6 +50,30 @@
         }
         .search-container button:hover {
             background-color: #e64a19;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .buttons button {
+            width: 50px;
+            height: 50px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            background-color: #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .buttons .star {
+            background: radial-gradient(circle, gold, orange);
+        }
+        .buttons .triangle {
+            background: linear-gradient(to bottom, #2c3e50, #3498db);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
         }
         .results {
             display: flex;
@@ -79,35 +102,41 @@
             margin: 10px;
             color: #bbb;
         }
-        .particle {
-            position: absolute;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background-color: #ff5722;
-            animation: particle-animation 0.5s ease-out forwards;
+        @keyframes snow {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(100vh);
+            }
         }
-        @keyframes particle-animation {
-            0% {
-                opacity: 1;
-                transform: translate(0, 0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translate(calc(-50px + 100px * var(--random-x)), calc(20px + 100px * var(--random-y))) scale(0.5);
-            }
+        .snowflake {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            opacity: 0.8;
+            border-radius: 50%;
+            animation: snow linear infinite;
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1 id="headerTitle" onclick="resetPage()">YouTube 영상 검색</h1>
+    <h1 id="headerTitle" onclick="resetPage()">검색 + 오징어게임</h1>
 </header>
 
 <div class="search-container">
-    <input type="text" id="query" placeholder="검색어를 입력하세요..." oninput="spawnParticles(event)">
+    <input type="text" id="query" placeholder="검색어를 입력하세요..." oninput="checkGameState()">
     <button onclick="searchVideos()">검색</button>
+</div>
+
+<div class="buttons">
+    <button class="star" onclick="startSnowfall()">★</button>
+    <button class="triangle" onclick="startSquidGame()">▲</button>
 </div>
 
 <div class="results" id="results"></div>
@@ -115,36 +144,64 @@
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
     let nextPageToken = null;
+    let gameState = false; // 오징어 게임 활성화 여부
+    let timer = null; // 게임 타이머
 
-    // 파티클 생성 함수
-    function spawnParticles(event) {
-        const input = event.target;
-        const rect = input.getBoundingClientRect();
+    // 눈 내리기 기능
+    function startSnowfall() {
+        for (let i = 0; i < 100; i++) {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.style.left = `${Math.random() * 100}vw`;
+            snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
+            snowflake.style.animationDelay = `${Math.random() * 5}s`;
+            snowflake.style.transform = `translateY(-100%)`;
+            document.body.appendChild(snowflake);
 
-        const particleContainer = document.querySelector('.search-container');
-        for (let i = 0; i < 10; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-
-            // 파티클의 랜덤 위치 설정
-            const randomX = Math.random() - 0.5;
-            const randomY = Math.random() * 0.5; // 아래쪽으로 퍼지게 설정
-            particle.style.setProperty('--random-x', randomX);
-            particle.style.setProperty('--random-y', randomY);
-
-            // 파티클의 초기 위치 설정 (검색창 바로 아래)
-            particle.style.left = `${rect.left + rect.width / 2 + randomX * 20}px`;
-            particle.style.top = `${rect.bottom + 5}px`; // 검색창 아래로 5px 위치
-
-            particleContainer.appendChild(particle);
-
-            // 애니메이션 종료 후 파티클 삭제
-            setTimeout(() => particle.remove(), 500);
+            snowflake.addEventListener('animationend', () => snowflake.remove());
         }
     }
 
-    // YouTube 검색 함수
+    // 오징어 게임 시작
+    function startSquidGame() {
+        if (gameState) return;
+
+        gameState = true;
+        const queryInput = document.getElementById('query');
+        const squidGameText = '무궁화 꽃이 피었습니다';
+        const gameDuration = 3000; // 3초 동안 문구 표시
+        const resultsContainer = document.getElementById('results');
+
+        queryInput.disabled = false; // 검색창 활성화
+        queryInput.value = ''; // 검색창 초기화
+        resultsContainer.innerHTML = ''; // 검색 결과 초기화
+
+        alert(`${squidGameText} 시작!`);
+
+        // 게임 타이머 시작
+        timer = setTimeout(() => {
+            gameState = false; // 게임 종료
+            if (queryInput.value.trim() !== '') {
+                alert('게임 실패! 무궁화 꽃이 피었습니다가 끝난 후 입력 중입니다.');
+                resultsContainer.innerHTML = ''; // 결과 숨기기
+            } else {
+                alert('게임 성공! 검색 결과를 볼 수 있습니다.');
+            }
+        }, gameDuration);
+    }
+
+    // 검색 상태 체크
+    function checkGameState() {
+        if (gameState) {
+            clearTimeout(timer); // 입력 중이면 게임 실패 처리
+            document.getElementById('results').innerHTML = ''; // 결과 숨기기
+        }
+    }
+
+    // YouTube 검색
     async function searchVideos() {
+        if (gameState) return; // 게임 진행 중엔 검색 금지
+
         const query = document.getElementById('query').value.trim();
         if (!query) {
             alert('검색어를 입력하세요.');
@@ -181,7 +238,7 @@
         }
     }
 
-    // 검색 결과 표시 함수
+    // 검색 결과 표시
     function displayVideos(videos) {
         const resultsContainer = document.getElementById('results');
 
@@ -210,6 +267,8 @@
         document.getElementById('query').value = '';
         document.getElementById('results').innerHTML = '';
         nextPageToken = null;
+        gameState = false;
+        clearTimeout(timer);
     }
 </script>
 
