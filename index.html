@@ -115,6 +115,19 @@
         .fade-out {
             animation: fadeOut 2s forwards;
         }
+
+        .snow-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: radial-gradient(white 10%, transparent 70%);
+            background-size: 10px 10px;
+            opacity: 0;
+            transition: opacity 1s;
+        }
     </style>
 </head>
 <body>
@@ -130,11 +143,13 @@
 </div>
 
 <div class="results" id="results"></div>
+<div id="snowOverlay" class="snow-overlay"></div>
 
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
     let snowfallInterval;
     let snowflakes = [];
+    let isSnowing = false;
 
     function searchVideos() {
         const query = document.getElementById('query').value.trim();
@@ -184,11 +199,23 @@
 
     function toggleSnowfall() {
         const button = document.getElementById('toggleSnow');
+        const snowOverlay = document.getElementById('snowOverlay');
+
         if (snowfallInterval) {
             clearInterval(snowfallInterval);
             snowfallInterval = null;
             button.textContent = '❄️';
+
+            // Gradually fade out snow overlay
+            snowOverlay.style.opacity = '0';
+            setTimeout(() => {
+                snowOverlay.style.display = 'none';
+            }, 1000);
         } else {
+            isSnowing = true;
+            snowOverlay.style.display = 'block';
+            snowOverlay.style.opacity = '1';
+
             snowfallInterval = setInterval(createSnowflake, 200);
             button.textContent = '🛑';
         }
