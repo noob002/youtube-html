@@ -30,7 +30,7 @@
             display: flex;
             justify-content: center;
             padding: 20px;
-            position: relative; /* 파티클 위치를 검색창 기준으로 설정 */
+            position: relative;
         }
         .search-container input {
             padding: 10px;
@@ -67,7 +67,7 @@
             }
             100% {
                 opacity: 0;
-                transform: translate(calc(-50px + 100px * var(--random-x)), calc(-50px + 100px * var(--random-y))) scale(0.5);
+                transform: translate(calc(-50px + 100px * var(--random-x)), calc(10px + 100px * var(--random-y))) scale(0.5);
             }
         }
     </style>
@@ -89,7 +89,6 @@
     function spawnParticles(event) {
         const input = event.target;
         const rect = input.getBoundingClientRect();
-        const cursorPosition = input.selectionStart; // 입력 위치 가져오기
 
         const particleContainer = document.querySelector('.search-container');
         for (let i = 0; i < 10; i++) {
@@ -98,13 +97,13 @@
 
             // 파티클의 랜덤 위치 설정
             const randomX = Math.random() - 0.5;
-            const randomY = Math.random() - 0.5;
+            const randomY = Math.random() * 0.5; // 아래쪽으로 퍼지게 설정
             particle.style.setProperty('--random-x', randomX);
             particle.style.setProperty('--random-y', randomY);
 
-            // 파티클의 초기 위치 설정 (커서 위치 근처)
-            particle.style.left = `${rect.left + cursorPosition * 8 + Math.random() * 10}px`;
-            particle.style.top = `${rect.top + rect.height / 2 + Math.random() * 10 - 5}px`;
+            // 파티클의 초기 위치 설정 (검색창 바로 아래)
+            particle.style.left = `${rect.left + rect.width / 2 + randomX * 20}px`;
+            particle.style.top = `${rect.bottom + 5}px`; // 검색창 아래로 5px 위치
 
             particleContainer.appendChild(particle);
 
