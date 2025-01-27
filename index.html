@@ -13,6 +13,7 @@
             padding: 0;
             box-sizing: border-box;
             overflow: hidden;
+            position: relative;
         }
         header {
             background-color: #333;
@@ -73,30 +74,43 @@
         .buttons .star {
             background: radial-gradient(circle, gold, orange);
         }
-        .buttons .triangle {
-            background: linear-gradient(to bottom, #2c3e50, #3498db);
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-        }
-        .buttons .circle {
-            background: radial-gradient(circle, #ff4081, #f50057);
+        .snow-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
         }
         .snowflake {
             position: absolute;
-            top: 0;
+            top: -10px;
             left: 0;
             width: 10px;
             height: 10px;
             background-color: white;
             opacity: 0.8;
             border-radius: 50%;
-            animation: snow linear infinite;
+            animation: snow 5s linear infinite;
+        }
+        .snowflake.snowed {
+            animation: snow 10s linear infinite, accumulate 5s forwards;
         }
         @keyframes snow {
-            from {
+            0% {
                 transform: translateY(-100%);
             }
-            to {
+            100% {
                 transform: translateY(100vh);
+            }
+        }
+        @keyframes accumulate {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(100px); /* 눈이 쌓이는 높이 */
             }
         }
     </style>
@@ -114,124 +128,70 @@
 
 <div class="buttons" id="buttons">
     <button class="star" id="starButton" onclick="toggleSnowfall()">★</button>
-    <button class="triangle" onclick="removeShapes()">▲</button>
-    <button class="circle" onclick="moveSearch()">●</button>
 </div>
 
 <div class="results" id="results"></div>
 
+<div class="snow-container" id="snowContainer"></div>
+
 <script>
-    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
-    let snowfallActive = false;
+    let snowfallInterval;
     let snowflakes = [];
-
-    // 눈내리기 시작/중지
+    let snowCount = 0;
+    let isSnowing = false;
+    
     function toggleSnowfall() {
-        if (snowfallActive) {
-            snowflakes.forEach(flake => flake.remove());
+        if (isSnowing) {
+            clearInterval(snowfallInterval);
+            isSnowing = false;
+            snowflakes.forEach(snowflake => snowflake.remove());
             snowflakes = [];
-            snowfallActive = false;
         } else {
-            for (let i = 0; i < 100; i++) {
-                const snowflake = document.createElement('div');
-                snowflake.className = 'snowflake';
-                snowflake.style.left = `${Math.random() * 100}vw`;
-                snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
-                snowflake.style.animationDelay = `${Math.random() * 5}s`;
-                document.body.appendChild(snowflake);
-                snowflakes.push(snowflake);
-            }
-            snowfallActive = true;
+            isSnowing = true;
+            snowfallInterval = setInterval(createSnowflake, 1000); // 1초마다 눈송이 생성
         }
     }
 
-    // 검색창 위치 이동 및 스타일 변경
-    function moveSearch() {
-        const searchContainer = document.getElementById('searchContainer');
-        const randomTop = Math.random() * 80 + 10; // 10% ~ 90% 높이
-        const randomLeft = Math.random() * 80 + 10; // 10% ~ 90% 너비
-        searchContainer.style.top = `${randomTop}%`;
-        searchContainer.style.left = `${randomLeft}%`;
+    function createSnowflake() {
+        if (!isSnowing) return;
 
-        // 기괴한 스타일 변경
-        const input = document.getElementById('query');
-        input.style.transform = `rotate(${Math.random() * 30 - 15}deg)`; // -15도 ~ 15도 회전
-        input.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 50%)`; // 무작위 색상
-        input.style.width = `${Math.random() * 200 + 200}px`; // 200px ~ 400px
-    }
+        const snowflake = document.createElement('div');
+        snowflake.classList.add('snowflake');
+        snowflake.classList.add('snowed');
+        
+        const size = Math.random() * 5 + 5; // 눈송이 크기 랜덤 (5px~10px)
+        snowflake.style.width = `${size}px`;
+        snowflake.style.height = `${size}px`;
+        snowflake.style.left = `${Math.random() * window.innerWidth}px`;
 
-    // 도형 버튼 모두 제거
-    function removeShapes() {
-        const buttons = document.getElementById('buttons');
-        buttons.style.display = 'none';
-    }
+        // 눈송이 바닥에 쌓이기 위한 타이밍
+        snowflake.style.animationDuration = `${Math.random() * 3 + 5}s`; // 눈송이 떨어지는 시간 (5~8초)
+        
+        document.getElementById('snowContainer').appendChild(snowflake);
+        snowflakes.push(snowflake);
 
-    // YouTube 검색
-    async function searchVideos() {
-        const query = document.getElementById('query').value.trim();
-        if (!query) {
-            alert('검색어를 입력하세요.');
-            return;
-        }
+        // 눈송이가 떨어지고 바닥에 쌓이도록 애니메이션
+        snowflake.addEventListener('animationend', () => {
+            snowflake.classList.add('snowed');
+            snowflake.style.animation = 'none'; // 한 번 애니메이션을 끝내고 고정
+            snowflake.offsetHeight; // reflow를 트리거
+            snowflake.style.animation = 'accumulate 2s forwards'; // 쌓이는 애니메이션
+        });
 
-        const resultsContainer = document.getElementById('results');
-        resultsContainer.innerHTML = ''; // 이전 결과 초기화
-
-        const url = new URL('https://www.googleapis.com/youtube/v3/search');
-        url.searchParams.set('part', 'snippet');
-        url.searchParams.set('q', query);
-        url.searchParams.set('type', 'video');
-        url.searchParams.set('maxResults', 10);
-        url.searchParams.set('key', API_KEY);
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.items) {
-                displayVideos(data.items);
-            } else {
-                alert('검색 결과가 없습니다.');
-            }
-        } catch (error) {
-            console.error('Error fetching videos:', error);
-            alert('동영상을 가져오는 중 오류가 발생했습니다.');
+        snowCount++;
+        if (snowCount > 50) {
+            clearInterval(snowfallInterval); // 일정 개수 이상 눈송이가 떨어지면 멈춤
         }
     }
 
-    // 검색 결과 표시
-    function displayVideos(videos) {
-        const resultsContainer = document.getElementById('results');
-
-        for (const video of videos) {
-            const videoId = video.id.videoId;
-            const title = video.snippet.title;
-            const description = video.snippet.description;
-            const thumbnailUrl = video.snippet.thumbnails.high.url;
-
-            const videoCard = document.createElement('div');
-            videoCard.className = 'video-card';
-            videoCard.innerHTML = `
-                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
-                    <img src="${thumbnailUrl}" alt="${title}">
-                    <h3>${title}</h3>
-                    <p>${description}</p>
-                </a>
-            `;
-
-            resultsContainer.appendChild(videoCard);
-        }
+    function searchVideos() {
+        // 여기에 검색 기능을 추가하는 코드
+        console.log("검색 기능을 실행합니다.");
     }
 
-    // 페이지 초기화
     function resetPage() {
         document.getElementById('query').value = '';
         document.getElementById('results').innerHTML = '';
-        snowfallActive = false;
-        snowflakes.forEach(flake => flake.remove());
-        snowflakes = [];
-        const buttons = document.getElementById('buttons');
-        buttons.style.display = 'flex';
     }
 </script>
 
