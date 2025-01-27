@@ -13,8 +13,6 @@
             padding: 0;
             box-sizing: border-box;
             overflow: auto;
-            transform: rotate(0deg); /* 초기 상태 */
-            transition: transform 0.5s ease; /* 회전 복구 시 부드럽게 */
         }
         header {
             background-color: #333;
@@ -26,12 +24,13 @@
         h1 {
             margin: 0;
             font-size: 24px;
-            cursor: pointer; /* 제목 클릭 가능 */
+            cursor: pointer;
         }
         .search-container {
             display: flex;
             justify-content: center;
             padding: 20px;
+            position: relative; /* 파티클 위치를 검색창 기준으로 설정 */
         }
         .search-container input {
             padding: 10px;
@@ -53,89 +52,23 @@
         .search-container button:hover {
             background-color: #e64a19;
         }
-        .results {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            padding: 20px;
-            gap: 20px;
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background-color: #ff5722;
+            animation: particle-animation 0.5s ease-out forwards;
         }
-        .video-card {
-            background-color: #222;
-            border-radius: 8px;
-            width: 300px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-        .video-card img {
-            width: 100%;
-            border-bottom: 1px solid #444;
-        }
-        .video-card h3 {
-            font-size: 18px;
-            margin: 10px;
-        }
-        .video-card p {
-            font-size: 14px;
-            margin: 10px;
-            color: #bbb;
-        }
-        .dark-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: black;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.5s ease;
-        }
-        .flashing-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1000;
-            visibility: hidden;
-        }
-        @keyframes flashColors {
-            0% { background-color: red; }
-            25% { background-color: yellow; }
-            50% { background-color: green; }
-            75% { background-color: blue; }
-            100% { background-color: purple; }
-        }
-        
-        /* 입력 이펙트 관련 스타일 */
-        @keyframes typingEffect {
+        @keyframes particle-animation {
             0% {
-                text-shadow: 0 0 5px #ff5722, 0 0 10px #ff5722, 0 0 20px #ff5722, 0 0 30px #ff5722;
-            }
-            50% {
-                text-shadow: 0 0 10px #e64a19, 0 0 20px #e64a19, 0 0 40px #e64a19, 0 0 60px #e64a19;
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
             }
             100% {
-                text-shadow: 0 0 5px #ff5722, 0 0 10px #ff5722, 0 0 20px #ff5722, 0 0 30px #ff5722;
+                opacity: 0;
+                transform: translate(calc(-50px + 100px * var(--random-x)), calc(-50px + 100px * var(--random-y))) scale(0.5);
             }
-        }
-        .search-container input:focus {
-            outline: none;
-            animation: typingEffect 1s infinite alternate;
-        }
-        .search-container input::placeholder {
-            color: #aaa;
-            transition: color 0.5s ease;
-        }
-        .search-container input:focus::placeholder {
-            color: transparent;
         }
     </style>
 </head>
@@ -146,145 +79,48 @@
 </header>
 
 <div class="search-container">
-    <input type="text" id="query" placeholder="검색어를 입력하세요...">
+    <input type="text" id="query" placeholder="검색어를 입력하세요..." oninput="spawnParticles(event)">
     <button onclick="searchVideos()">검색</button>
 </div>
 
 <div class="results" id="results"></div>
-<div class="dark-overlay" id="darkOverlay">!!눈 조심!!</div>
-<div class="flashing-screen" id="flashingScreen"></div>
 
 <script>
-    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
-    let nextPageToken = null;
-    let currentQuery = '';
+    function spawnParticles(event) {
+        const input = event.target;
+        const rect = input.getBoundingClientRect();
+        const cursorPosition = input.selectionStart; // 입력 위치 가져오기
 
-    async function searchVideos() {
+        const particleContainer = document.querySelector('.search-container');
+        for (let i = 0; i < 10; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+
+            // 파티클의 랜덤 위치 설정
+            const randomX = Math.random() - 0.5;
+            const randomY = Math.random() - 0.5;
+            particle.style.setProperty('--random-x', randomX);
+            particle.style.setProperty('--random-y', randomY);
+
+            // 파티클의 초기 위치 설정 (커서 위치 근처)
+            particle.style.left = `${rect.left + cursorPosition * 8 + Math.random() * 10}px`;
+            particle.style.top = `${rect.top + rect.height / 2 + Math.random() * 10 - 5}px`;
+
+            particleContainer.appendChild(particle);
+
+            // 애니메이션 종료 후 파티클 삭제
+            setTimeout(() => particle.remove(), 500);
+        }
+    }
+
+    function searchVideos() {
         const query = document.getElementById('query').value.trim();
-
-        if (query === 'noob002') {
-            triggerNoobEasterEgg();
-            return;
-        } else if (query === 'flash') {
-            triggerFlashEasterEgg();
-            return;
-        } else if (query.toLowerCase() === 'never gonna give you up') {
-            triggerRickRollEasterEgg();
-            return;
-        }
-
-        currentQuery = query;
-        nextPageToken = null;
-        document.getElementById('results').innerHTML = '';
-
-        await fetchVideos(query);
-    }
-
-    async function fetchVideos(query) {
-        const url = new URL('https://www.googleapis.com/youtube/v3/search');
-        url.searchParams.set('part', 'snippet');
-        url.searchParams.set('q', query);
-        url.searchParams.set('type', 'video');
-        url.searchParams.set('maxResults', 50);
-        url.searchParams.set('key', API_KEY);
-        if (nextPageToken) url.searchParams.set('pageToken', nextPageToken);
-
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.items) {
-                displayVideos(data.items);
-                nextPageToken = data.nextPageToken || null;
-            } else {
-                alert("검색 결과가 없습니다.");
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            alert("데이터를 불러오는 중 오류가 발생했습니다.");
-        }
-    }
-
-    function displayVideos(videos) {
-        const resultsContainer = document.getElementById('results');
-
-        for (const video of videos) {
-            const videoId = video.id.videoId;
-            const title = video.snippet.title;
-            const description = video.snippet.description;
-            const thumbnailUrl = video.snippet.thumbnails.high.url;
-
-            const videoCard = document.createElement('div');
-            videoCard.className = 'video-card';
-            videoCard.innerHTML = `
-                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
-                    <img src="${thumbnailUrl}" alt="${title}">
-                    <h3>${title}</h3>
-                    <p>${description}</p>
-                </a>
-            `;
-
-            resultsContainer.appendChild(videoCard);
-        }
-    }
-
-    function triggerNoobEasterEgg() {
-        const body = document.body;
-        let angle = 0;
-        let speed = 0.1;
-        let increasing = true;
-        const maxSpeed = 10;
-
-        const interval = setInterval(() => {
-            if (increasing) {
-                speed += 0.1;
-                if (speed >= maxSpeed) increasing = false;
-            } else {
-                speed -= 0.1;
-                if (speed <= 0) {
-                    clearInterval(interval);
-                    body.style.transform = 'rotate(0deg)';
-                    return;
-                }
-            }
-            angle += speed;
-            body.style.transform = `rotate(${angle}deg)`;
-        }, 16);
-    }
-
-    function triggerFlashEasterEgg() {
-        const darkOverlay = document.getElementById('darkOverlay');
-        const flashingScreen = document.getElementById('flashingScreen');
-
-        darkOverlay.style.visibility = 'visible';
-        darkOverlay.style.opacity = '1';
-
-        setTimeout(() => {
-            darkOverlay.style.opacity = '0';
-            setTimeout(() => {
-                darkOverlay.style.visibility = 'hidden';
-                flashingScreen.style.visibility = 'visible';
-                flashingScreen.style.animation = 'flashColors 0.1s infinite';
-
-                setTimeout(() => {
-                    flashingScreen.style.visibility = 'hidden';
-                    flashingScreen.style.animation = '';
-                }, 3000);
-            }, 500);
-        }, 3000);
-    }
-
-    function triggerRickRollEasterEgg() {
-        window.location.href = 'https://youtu.be/dQw4w9WgXcQ?si=oTYwvWQXY6khS_6r';
+        alert(`검색어: ${query}`);
     }
 
     function resetPage() {
-        // 검색어 및 결과 초기화
         document.getElementById('query').value = '';
         document.getElementById('results').innerHTML = '';
-
-        // 화면 효과 초기화
-        document.body.style.transform = 'rotate(0deg)';
     }
 </script>
 
