@@ -28,7 +28,9 @@
         .search-container {
             display: flex;
             justify-content: center;
+            align-items: center;
             padding: 20px;
+            position: relative;
         }
 
         .search-container input {
@@ -38,6 +40,8 @@
             background-color: #222;
             color: white;
             width: 300px;
+            position: relative;
+            z-index: 1;
         }
 
         .search-container button {
@@ -85,28 +89,25 @@
             color: #bbb;
         }
 
-        .snowflake {
-            position: fixed;
-            top: 0;
-            color: white;
-            font-size: 12px;
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background-color: red;
+            border-radius: 50%;
             pointer-events: none;
-            animation: fall linear infinite;
+            animation: explode 0.5s ease-out forwards;
         }
 
-        @keyframes fall {
+        @keyframes explode {
             0% {
-                transform: translateY(-100px);
+                transform: translate(0, 0) scale(1);
                 opacity: 1;
             }
             100% {
-                transform: translateY(100vh);
+                transform: translate(var(--x, 0), var(--y, 0)) scale(0.5);
                 opacity: 0;
             }
-        }
-
-        .fade-out {
-            animation: fadeOut 2s forwards;
         }
     </style>
 </head>
@@ -117,7 +118,7 @@
 </header>
 
 <div class="search-container">
-    <input type="text" id="query" placeholder="검색어를 입력하세요...">
+    <input type="text" id="query" placeholder="검색어를 입력하세요..." oninput="createParticle(event)">
     <button onclick="searchVideos()">검색</button>
     <button id="toggleSnow" onclick="toggleSnowfall()">❄️</button>
 </div>
@@ -127,9 +128,6 @@
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
     let snowfallInterval;
-    let snowflakes = [];
-    let isSnowing = false;
-    let snowIntervalTime = 500; // 초기 눈송이 생성 간격 (밀리초)
 
     function searchVideos() {
         const query = document.getElementById('query').value.trim();
@@ -157,6 +155,45 @@
             .catch(error => console.error('Error fetching videos:', error));
     }
 
+    function createParticle(event) {
+        const input = event.target;
+        const rect = input.getBoundingClientRect();
+        const particleCount = 10; // Number of particles to generate
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Randomize particle colors and directions
+            particle.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
+            particle.style.setProperty('--x', `${Math.random() * 100 - 50}px`); // Horizontal explosion
+            particle.style.setProperty('--y', `${Math.random() * 50 - 25}px`);  // Vertical explosion
+            
+            // Set initial position near input
+            particle.style.left = `${rect.left + rect.width / 2}px`;
+            particle.style.top = `${rect.top}px`;
+            document.body.appendChild(particle);
+
+            // Remove particle after animation ends
+            particle.addEventListener('animationend', () => {
+                particle.remove();
+            });
+        }
+    }
+
+    function toggleSnowfall() {
+        const button = document.getElementById('toggleSnow');
+
+        if (snowfallInterval) {
+            clearInterval(snowfallInterval);
+            snowfallInterval = null;
+            button.textContent = '❄️';
+        } else {
+            button.textContent = '🛑';
+            snowfallInterval = setInterval(createSnowflake, 200);
+        }
+    }
+
     function createSnowflake() {
         const snowflake = document.createElement('div');
         snowflake.className = 'snowflake';
@@ -167,31 +204,9 @@
 
         document.body.appendChild(snowflake);
 
-        // Remove snowflake after animation ends
         snowflake.addEventListener('animationend', () => {
             snowflake.remove();
         });
-    }
-
-    function toggleSnowfall() {
-        const button = document.getElementById('toggleSnow');
-
-        if (isSnowing) {
-            clearInterval(snowfallInterval);
-            snowfallInterval = null;
-            button.textContent = '❄️';
-            isSnowing = false;
-        } else {
-            isSnowing = true;
-            button.textContent = '🛑';
-            snowfallInterval = setInterval(() => {
-                createSnowflake();
-                // Reduce the interval time progressively to increase snow density
-                snowIntervalTime = Math.max(100, snowIntervalTime - 20); // 최소 100ms까지 감소
-                clearInterval(snowfallInterval);
-                snowfallInterval = setInterval(createSnowflake, snowIntervalTime);
-            }, snowIntervalTime);
-        }
     }
 </script>
 
