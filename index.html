@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube 영상 검색</title>
     <style>
-        /* 기존 스타일 동일 */
+        /* 기존 스타일 유지 */
         body {
             font-family: Arial, sans-serif;
             background-color: #121212;
@@ -24,6 +24,10 @@
         h1 {
             margin: 0;
             font-size: 24px;
+        }
+
+        .red {
+            color: #ff0000; /* 빨간색 */
         }
 
         .search-container {
@@ -86,32 +90,13 @@
             margin: 10px;
             color: #bbb;
         }
-
-        .snowflake {
-            position: fixed;
-            top: -10px;
-            color: white;
-            font-size: 12px;
-            pointer-events: none;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            0% {
-                transform: translateY(-100px);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh);
-                opacity: 0.7;
-            }
-        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>YouTube 영상 검색</h1>
+    <!-- 제목에 빨간색 "YouTube" 추가 -->
+    <h1><span class="red">YouTube</span> 영상 검색</h1>
 </header>
 
 <div class="search-container">
