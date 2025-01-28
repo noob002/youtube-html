@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube 영상 검색</title>
     <style>
-        /* 기존 스타일 유지 */
         body {
             font-family: Arial, sans-serif;
             background-color: #121212;
@@ -90,12 +89,31 @@
             margin: 10px;
             color: #bbb;
         }
+
+        .snowflake {
+            position: fixed;
+            top: 0;
+            color: white;
+            font-size: 12px;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0.7;
+            }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <!-- 제목에 빨간색 "YouTube" 추가 -->
     <h1><span class="red">YouTube</span> 영상 검색</h1>
 </header>
 
@@ -155,14 +173,14 @@
         snowflake.className = 'snowflake';
         snowflake.textContent = '❄';
 
-        // Randomize position and size of the snowflake
+        // Randomize position, size, and fall duration
         snowflake.style.left = `${Math.random() * 100}vw`;
         snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
         snowflake.style.fontSize = `${Math.random() * 10 + 10}px`;
 
         document.body.appendChild(snowflake);
 
-        // Remove snowflake when animation ends
+        // Remove snowflake after falling animation ends
         snowflake.addEventListener('animationend', () => {
             snowflake.remove();
         });
