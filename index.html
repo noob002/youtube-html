@@ -129,6 +129,9 @@
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
     let snowfallInterval;
 
+    // 우클릭 방지
+    document.addEventListener('contextmenu', event => event.preventDefault());
+
     function searchVideos() {
         const query = document.getElementById('query').value.trim();
         if (!query) return;
