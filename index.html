@@ -30,7 +30,6 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            position: relative;
         }
 
         .search-container input {
@@ -40,8 +39,6 @@
             background-color: #222;
             color: white;
             width: 300px;
-            position: relative;
-            z-index: 1;
         }
 
         .search-container button {
@@ -89,24 +86,23 @@
             color: #bbb;
         }
 
-        .particle {
-            position: absolute;
-            width: 5px;
-            height: 5px;
-            background-color: red;
-            border-radius: 50%;
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: white;
+            font-size: 12px;
             pointer-events: none;
-            animation: explode 0.5s ease-out forwards;
+            animation: fall linear infinite;
         }
 
-        @keyframes explode {
+        @keyframes fall {
             0% {
-                transform: translate(0, 0) scale(1);
+                transform: translateY(-100px);
                 opacity: 1;
             }
             100% {
-                transform: translate(var(--x, 0), var(--y, 0)) scale(0.5);
-                opacity: 0;
+                transform: translateY(100vh);
+                opacity: 0.7;
             }
         }
     </style>
@@ -118,7 +114,7 @@
 </header>
 
 <div class="search-container">
-    <input type="text" id="query" placeholder="검색어를 입력하세요..." oninput="createParticle(event)">
+    <input type="text" id="query" placeholder="검색어를 입력하세요...">
     <button onclick="searchVideos()">검색</button>
     <button id="toggleSnow" onclick="toggleSnowfall()">❄️</button>
 </div>
@@ -128,9 +124,6 @@
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
     let snowfallInterval;
-
-    // 우클릭 방지
-    document.addEventListener('contextmenu', event => event.preventDefault());
 
     function searchVideos() {
         const query = document.getElementById('query').value.trim();
@@ -158,32 +151,6 @@
             .catch(error => console.error('Error fetching videos:', error));
     }
 
-    function createParticle(event) {
-        const input = event.target;
-        const rect = input.getBoundingClientRect();
-        const particleCount = 10; // Number of particles to generate
-
-        for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            
-            // Randomize particle colors and directions
-            particle.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 70%)`;
-            particle.style.setProperty('--x', `${Math.random() * 100 - 50}px`); // Horizontal explosion
-            particle.style.setProperty('--y', `${Math.random() * 50 - 25}px`);  // Vertical explosion
-            
-            // Set initial position near input
-            particle.style.left = `${rect.left + rect.width / 2}px`;
-            particle.style.top = `${rect.top}px`;
-            document.body.appendChild(particle);
-
-            // Remove particle after animation ends
-            particle.addEventListener('animationend', () => {
-                particle.remove();
-            });
-        }
-    }
-
     function toggleSnowfall() {
         const button = document.getElementById('toggleSnow');
 
@@ -193,7 +160,7 @@
             button.textContent = '❄️';
         } else {
             button.textContent = '🛑';
-            snowfallInterval = setInterval(createSnowflake, 200);
+            snowfallInterval = setInterval(createSnowflake, 100);
         }
     }
 
@@ -201,12 +168,15 @@
         const snowflake = document.createElement('div');
         snowflake.className = 'snowflake';
         snowflake.textContent = '❄';
+
+        // Randomize position and size of the snowflake
         snowflake.style.left = `${Math.random() * 100}vw`;
         snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
         snowflake.style.fontSize = `${Math.random() * 10 + 10}px`;
 
         document.body.appendChild(snowflake);
 
+        // Remove snowflake when animation ends
         snowflake.addEventListener('animationend', () => {
             snowflake.remove();
         });
