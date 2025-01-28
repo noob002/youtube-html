@@ -103,47 +103,8 @@
             }
         }
 
-        @keyframes fadeOut {
-            0% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
-
         .fade-out {
             animation: fadeOut 2s forwards;
-        }
-
-        .snow-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            background: transparent; /* Removed unwanted background patterns */
-            opacity: 0;
-            transition: opacity 1s;
-        }
-
-        .falling-text {
-            position: absolute;
-            color: white;
-            font-size: 20px;
-            animation: textFall 1s ease-out forwards;
-        }
-
-        @keyframes textFall {
-            0% {
-                transform: translateY(-50px);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(300px);
-                opacity: 0;
-            }
         }
     </style>
 </head>
@@ -160,7 +121,7 @@
 </div>
 
 <div class="results" id="results"></div>
-<div id="snowOverlay" class="snow-overlay"></div>
+<canvas id="snowCanvas"></canvas>
 
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
@@ -168,14 +129,75 @@
     let snowflakes = [];
     let isSnowing = false;
 
+    // Canvas for snow overlay
+    const canvas = document.getElementById('snowCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Snowflake constructor
+    class Snowflake {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * -50;
+            this.size = Math.random() * 5 + 2;
+            this.speed = Math.random() * 1 + 0.5;
+            this.opacity = Math.random() * 0.5 + 0.5;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+            ctx.fill();
+        }
+
+        update() {
+            this.y += this.speed;
+            if (this.y > canvas.height) {
+                this.leaveTrail(); // Leave a trail when snowflake "lands"
+                this.y = Math.random() * -50;
+                this.x = Math.random() * canvas.width;
+            }
+            this.draw();
+        }
+
+        leaveTrail() {
+            const trailSize = this.size * 3;
+            ctx.beginPath();
+            ctx.arc(this.x, canvas.height - trailSize / 2, trailSize, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, 0.2)`;
+            ctx.fill();
+        }
+    }
+
+    function createSnowflakes() {
+        snowflakes.push(new Snowflake());
+    }
+
+    function animateSnowfall() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        snowflakes.forEach(flake => flake.update());
+        snowflakes = snowflakes.filter(flake => flake.y < canvas.height); // Remove off-screen snowflakes
+        requestAnimationFrame(animateSnowfall);
+    }
+
+    function toggleSnowfall() {
+        const button = document.getElementById('toggleSnow');
+        if (isSnowing) {
+            isSnowing = false;
+            button.textContent = '❄️';
+        } else {
+            isSnowing = true;
+            button.textContent = '🛑';
+            setInterval(createSnowflakes, 200);
+            animateSnowfall();
+        }
+    }
+
     function searchVideos() {
         const query = document.getElementById('query').value.trim();
         if (!query) return;
-
-        // Trigger falling text effect for each character
-        [...query].forEach((char, index) => {
-            setTimeout(() => createFallingText(char), index * 100);
-        });
 
         fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=10&key=${API_KEY}`)
             .then(response => response.json())
@@ -199,62 +221,10 @@
             .catch(error => console.error('Error fetching videos:', error));
     }
 
-    function createFallingText(char) {
-        const text = document.createElement('div');
-        text.className = 'falling-text';
-        text.textContent = char;
-        text.style.left = `${Math.random() * 100}vw`;
-
-        document.body.appendChild(text);
-
-        text.addEventListener('animationend', () => {
-            document.body.removeChild(text);
-        });
-    }
-
-    function createSnowflake() {
-        const snowflake = document.createElement('div');
-        snowflake.className = 'snowflake';
-        snowflake.textContent = '❄';
-        snowflake.style.left = `${Math.random() * 100}vw`;
-        snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
-        snowflake.style.fontSize = `${Math.random() * 10 + 10}px`;
-
-        document.body.appendChild(snowflake);
-        snowflakes.push(snowflake);
-
-        setTimeout(() => {
-            snowflake.classList.add('fade-out');
-            snowflake.addEventListener('animationend', () => {
-                document.body.removeChild(snowflake);
-                snowflakes = snowflakes.filter(s => s !== snowflake);
-            });
-        }, 5000);
-    }
-
-    function toggleSnowfall() {
-        const button = document.getElementById('toggleSnow');
-        const snowOverlay = document.getElementById('snowOverlay');
-
-        if (snowfallInterval) {
-            clearInterval(snowfallInterval);
-            snowfallInterval = null;
-            button.textContent = '❄️';
-
-            // Gradually fade out snow overlay
-            snowOverlay.style.opacity = '0';
-            setTimeout(() => {
-                snowOverlay.style.display = 'none';
-            }, 1000);
-        } else {
-            isSnowing = true;
-            snowOverlay.style.display = 'block';
-            snowOverlay.style.opacity = '1';
-
-            snowfallInterval = setInterval(createSnowflake, 200);
-            button.textContent = '🛑';
-        }
-    }
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
 </script>
 
 </body>
