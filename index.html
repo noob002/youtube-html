@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube 영상 검색</title>
     <style>
+        /* 기존 스타일 동일 */
         body {
             font-family: Arial, sans-serif;
             background-color: #121212;
@@ -181,6 +182,17 @@
             snowflake.remove();
         });
     }
+
+    // Prevent right-click and F12
+    document.addEventListener('contextmenu', (event) => {
+        event.preventDefault(); // Block right-click menu
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
+            event.preventDefault(); // Block F12 and Ctrl+Shift+I (Developer Tools)
+        }
+    });
 </script>
 
 </body>
