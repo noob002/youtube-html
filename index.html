@@ -26,13 +26,13 @@
         }
 
         .red {
-            color: #ff0000; /* 빨간색 */
+            color: red;
+            cursor: pointer;
         }
 
         .search-container {
             display: flex;
             justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
@@ -89,45 +89,26 @@
             margin: 10px;
             color: #bbb;
         }
-
-        .snowflake {
-            position: fixed;
-            top: 0;
-            color: white;
-            font-size: 12px;
-            pointer-events: none;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            0% {
-                transform: translateY(-100px);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh);
-                opacity: 0.7;
-            }
-        }
     </style>
 </head>
 <body>
 
 <header>
-    <h1><span class="red">YouTube</span> 영상 검색</h1>
+    <h1>
+        <span class="red" onclick="goToYouTube()">YouTube</span>
+        <span onclick="refreshPage()"> 영상 검색</span>
+    </h1>
 </header>
 
 <div class="search-container">
     <input type="text" id="query" placeholder="검색어를 입력하세요...">
     <button onclick="searchVideos()">검색</button>
-    <button id="toggleSnow" onclick="toggleSnowfall()">❄️</button>
 </div>
 
 <div class="results" id="results"></div>
 
 <script>
     const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
-    let snowfallInterval;
 
     function searchVideos() {
         const query = document.getElementById('query').value.trim();
@@ -155,47 +136,13 @@
             .catch(error => console.error('Error fetching videos:', error));
     }
 
-    function toggleSnowfall() {
-        const button = document.getElementById('toggleSnow');
-
-        if (snowfallInterval) {
-            clearInterval(snowfallInterval);
-            snowfallInterval = null;
-            button.textContent = '❄️';
-        } else {
-            button.textContent = '🛑';
-            snowfallInterval = setInterval(createSnowflake, 100);
-        }
+    function goToYouTube() {
+        window.location.href = "https://www.youtube.com";
     }
 
-    function createSnowflake() {
-        const snowflake = document.createElement('div');
-        snowflake.className = 'snowflake';
-        snowflake.textContent = '❄';
-
-        // Randomize position, size, and fall duration
-        snowflake.style.left = `${Math.random() * 100}vw`;
-        snowflake.style.animationDuration = `${Math.random() * 3 + 2}s`;
-        snowflake.style.fontSize = `${Math.random() * 10 + 10}px`;
-
-        document.body.appendChild(snowflake);
-
-        // Remove snowflake after falling animation ends
-        snowflake.addEventListener('animationend', () => {
-            snowflake.remove();
-        });
+    function refreshPage() {
+        location.reload();
     }
-
-    // Prevent right-click and F12
-    document.addEventListener('contextmenu', (event) => {
-        event.preventDefault(); // Block right-click menu
-    });
-
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'F12' || (event.ctrlKey && event.shiftKey && event.key === 'I')) {
-            event.preventDefault(); // Block F12 and Ctrl+Shift+I (Developer Tools)
-        }
-    });
 </script>
 
 </body>
