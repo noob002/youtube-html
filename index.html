@@ -68,16 +68,19 @@
             overflow: hidden;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease;
+            position: relative;
         }
 
         .video-card:hover {
             transform: scale(1.05);
         }
 
-        .video-card img {
+        .video-card img,
+        .video-card iframe {
             width: 100%;
             height: 180px;
             object-fit: cover;
+            border: none;
         }
 
         .video-card h3 {
@@ -140,15 +143,33 @@
             const results = document.getElementById('results');
 
             data.items.forEach(item => {
+                const videoId = item.id.videoId;
+                const thumbnailUrl = item.snippet.thumbnails.high.url;
                 const videoCard = document.createElement('div');
                 videoCard.className = 'video-card';
                 videoCard.innerHTML = `
-                    <a href="https://www.youtube.com/watch?v=${item.id.videoId}" target="_blank">
-                        <img src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
+                    <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" class="video-link">
+                        <img src="${thumbnailUrl}" alt="${item.snippet.title}">
                         <h3>${item.snippet.title}</h3>
                         <p>${item.snippet.description}</p>
                     </a>
                 `;
+
+                // 미리보기 재생 이벤트
+                const link = videoCard.querySelector('.video-link');
+                const img = videoCard.querySelector('img');
+
+                videoCard.addEventListener('mouseenter', () => {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0`;
+                    iframe.allow = 'autoplay';
+                    link.replaceChild(iframe, img);
+                });
+
+                videoCard.addEventListener('mouseleave', () => {
+                    link.replaceChild(img, link.querySelector('iframe'));
+                });
+
                 results.appendChild(videoCard);
             });
         } catch (error) {
