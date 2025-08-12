@@ -11,7 +11,7 @@
             color: white;
             margin: 0;
             padding: 0;
-            overflow: hidden;
+            overflow-x: hidden;
             transition: background 0.5s ease;
         }
 
@@ -29,11 +29,6 @@
             background-color: rgba(51, 51, 51, 0.8);
             padding: 10px 20px;
             text-align: center;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 24px;
         }
 
         .red {
@@ -65,46 +60,6 @@
             cursor: pointer;
         }
 
-        .search-container button:hover {
-            background-color: #e64a19;
-        }
-
-        /* ☀️/⭐ 토글 버튼 스타일 */
-        #themeToggle {
-            font-size: 20px;
-            background-color: #333;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.6s;
-            perspective: 500px;
-        }
-
-        /* 회전 애니메이션 */
-        .rotating {
-            animation: rotateIcon 0.6s ease-in-out;
-        }
-
-        @keyframes rotateIcon {
-            0% { transform: rotateY(0deg); }
-            50% { transform: rotateY(90deg); }
-            100% { transform: rotateY(180deg); }
-        }
-
-        /* ⭐ 반짝이 효과 */
-        .twinkling {
-            animation: twinkle 1.5s infinite alternate;
-        }
-
-        @keyframes twinkle {
-            0% { text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #ffdd55; }
-            50% { text-shadow: 0 0 6px #fff, 0 0 12px #ffffaa, 0 0 18px #ffdd55; }
-            100% { text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #ffdd55; }
-        }
-
         .results {
             display: flex;
             flex-wrap: wrap;
@@ -119,9 +74,15 @@
             width: 300px;
             overflow: hidden;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s;
         }
 
-        .video-card img {
+        .video-card:hover {
+            transform: scale(1.05);
+        }
+
+        .video-card img, 
+        .video-card iframe {
             width: 100%;
             border-bottom: 1px solid #444;
         }
@@ -136,6 +97,41 @@
             margin: 10px;
             color: #bbb;
         }
+
+        /* ☀️/⭐ 버튼 */
+        #themeToggle {
+            font-size: 20px;
+            background-color: #333;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.6s;
+            perspective: 500px;
+        }
+
+        .rotating {
+            animation: rotateIcon 0.6s ease-in-out;
+        }
+
+        @keyframes rotateIcon {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(90deg); }
+            100% { transform: rotateY(180deg); }
+        }
+
+        /* 반짝이 효과 */
+        .twinkling {
+            animation: twinkle 1.5s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #ffdd55; }
+            50% { text-shadow: 0 0 6px #fff, 0 0 12px #ffffaa, 0 0 18px #ffdd55; }
+            100% { text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #ffdd55; }
+        }
     </style>
 </head>
 <body class="day-theme">
@@ -149,24 +145,36 @@
 
 <div class="search-container">
     <input type="text" id="query" placeholder="검색어를 입력하세요...">
-    <button onclick="searchVideos()">검색</button>
+    <button onclick="searchVideos(true)">검색</button>
     <button id="themeToggle">☀️</button>
 </div>
 
 <div class="results" id="results"></div>
 
 <script>
-    const API_KEY = 'YOUR_API_KEY'; // 기존 API 키 사용
+    const API_KEY = 'YOUR_API_KEY';
+    let nextPageToken = '';
+    let currentQuery = '';
 
-    function searchVideos() {
-        const query = document.getElementById('query').value.trim();
-        if (!query) return;
+    function searchVideos(reset = false) {
+        const queryInput = document.getElementById('query').value.trim();
+        if (reset) {
+            currentQuery = queryInput;
+            nextPageToken = '';
+            document.getElementById('results').innerHTML = '';
+        }
+        if (!currentQuery) return;
 
-        fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&maxResults=10&key=${API_KEY}`)
+        let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(currentQuery)}&type=video&maxResults=50&key=${API_KEY}`;
+        if (nextPageToken) {
+            url += `&pageToken=${nextPageToken}`;
+        }
+
+        fetch(url)
             .then(response => response.json())
             .then(data => {
+                nextPageToken = data.nextPageToken || '';
                 const results = document.getElementById('results');
-                results.innerHTML = '';
 
                 data.items.forEach(item => {
                     const videoCard = document.createElement('div');
@@ -178,6 +186,28 @@
                             <p>${item.snippet.description}</p>
                         </a>
                     `;
+
+                    // 마우스 오버 시 미리보기
+                    videoCard.addEventListener('mouseenter', () => {
+                        const iframe = document.createElement('iframe');
+                        iframe.src = `https://www.youtube.com/embed/${item.id.videoId}?autoplay=1&mute=1`;
+                        iframe.frameBorder = '0';
+                        iframe.allow = 'autoplay; encrypted-media';
+                        iframe.width = '100%';
+                        iframe.height = '180';
+                        videoCard.querySelector('a').replaceWith(iframe);
+                    });
+
+                    videoCard.addEventListener('mouseleave', () => {
+                        videoCard.innerHTML = `
+                            <a href="https://www.youtube.com/watch?v=${item.id.videoId}" target="_blank">
+                                <img src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
+                                <h3>${item.snippet.title}</h3>
+                                <p>${item.snippet.description}</p>
+                            </a>
+                        `;
+                    });
+
                     results.appendChild(videoCard);
                 });
             })
@@ -192,7 +222,14 @@
         location.reload();
     }
 
-    // 테마 토글 기능 + 회전 + 별 반짝이 효과
+    // 무한 스크롤
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && nextPageToken) {
+            searchVideos(false);
+        }
+    });
+
+    // 테마 토글
     document.getElementById('themeToggle').addEventListener('click', function() {
         const body = document.body;
         const btn = this;
@@ -204,12 +241,12 @@
                 body.classList.remove('day-theme');
                 body.classList.add('night-theme');
                 btn.textContent = '⭐';
-                btn.classList.add('twinkling'); // 반짝이 효과 추가
+                btn.classList.add('twinkling');
             } else {
                 body.classList.remove('night-theme');
                 body.classList.add('day-theme');
                 btn.textContent = '☀️';
-                btn.classList.remove('twinkling'); // 반짝이 효과 제거
+                btn.classList.remove('twinkling');
             }
         }, 300);
 
