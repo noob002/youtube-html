@@ -1,412 +1,215 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>YouTube 검색기 — 통합버전</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube 영상 검색</title>
 <style>
-  :root{
-    --card-bg: rgba(34,34,34,0.85);
-    --accent: #ff5722;
-  }
-  *{box-sizing:border-box}
-  body{
-    font-family: Arial, Helvetica, sans-serif;
-    margin:0;
-    color:#fff;
-    background:#121212;
-    overflow-x:hidden;
-    transition: background 0.6s ease;
-    min-height:100vh;
-  }
-
-  /* Day / Night 배경 */
-  body.day-theme{
-    background: linear-gradient(180deg, #a7e7ff 0%, #87d3ff 50%, rgba(0,0,0,0.05) 100%), 
-      url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
-    background-blend-mode: overlay;
-  }
-  body.night-theme{
-    background: radial-gradient(ellipse at bottom, rgba(2,6,23,0.9) 0%, rgba(1,3,10,0.95) 60%, #000 100%),
-      url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
-    background-blend-mode: overlay;
-  }
-
-  /* 은은한 별들 (night 전용) */
-  .starfield {
-    pointer-events:none;
-    position:fixed;
-    inset:0;
-    z-index:0;
-    opacity:0;
-    transition:opacity 0.6s;
-  }
-  body.night-theme .starfield{ opacity:0.6; }
-
-  .star {
-    position:absolute;
-    width:2px; height:2px;
-    background:rgba(255,255,255,0.9);
-    border-radius:50%;
-    animation: starTw 3s infinite ease-in-out;
-    opacity:0.9;
-    filter:blur(0.3px);
-  }
-  @keyframes starTw{
-    0%{ transform:scale(1); opacity:0.6 }
-    50%{ transform:scale(1.6); opacity:1 }
-    100%{ transform:scale(1); opacity:0.6 }
-  }
-
-  header{
-    position:relative;
-    z-index:2;
-    background: rgba(0,0,0,0.4);
-    padding:12px 18px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    backdrop-filter: blur(6px);
-  }
-  header h1{ margin:0; font-size:18px; color:#ffd; display:flex; gap:8px; align-items:center;}
-  .red{ color:#ff4444; cursor:pointer; font-weight:700; }
-
-  /* 검색 박스 */
-  .search-container{
-    z-index:2;
-    display:flex;
-    gap:10px;
-    align-items:center;
-    padding:14px 18px;
-  }
-  .search-container input{
-    width:360px;
-    max-width:60vw;
-    padding:10px 12px;
-    font-size:15px;
-    border-radius:6px;
-    border:1px solid rgba(255,255,255,0.08);
-    background: rgba(0,0,0,0.45);
-    color:#fff;
-  }
-  .btn{
-    padding:10px 14px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:15px;
-  }
-  .btn.search{
-    background:var(--accent);
-    color:#fff;
-  }
-
-  /* 토글 버튼 스타일 + 회전 애니메이션 */
-  #themeToggle{
-    width:44px; height:44px;
-    display:inline-flex; align-items:center; justify-content:center;
-    border-radius:50%;
-    background: rgba(0,0,0,0.55);
-    font-size:20px;
-    border:1px solid rgba(255,255,255,0.06);
-    transition: transform 0.6s;
-    perspective:500px;
-  }
-  .rotating{ animation: rotateIcon 0.6s ease-in-out; }
-  @keyframes rotateIcon{
-    0%{ transform: rotateY(0deg); }
-    50%{ transform: rotateY(90deg); }
-    100%{ transform: rotateY(180deg); }
-  }
-
-  /* 반짝임 (밤일 때 버튼) */
-  .twinkling{
-    animation: twinkle 1.5s infinite alternate;
-    text-shadow: 0 0 6px rgba(255,255,255,0.9), 0 0 12px rgba(255,221,85,0.8);
-  }
-  @keyframes twinkle{
-    0%{ transform: translateY(0) scale(1); opacity:0.9; }
-    100%{ transform: translateY(-1px) scale(1.05); opacity:1; }
-  }
-
-  /* 결과 그리드 */
-  #results{
-    z-index:2;
-    position:relative;
-    display:flex;
-    flex-wrap:wrap;
-    gap:18px;
-    padding:20px;
-    justify-content:center;
-  }
-  .video-card{
-    width:300px;
-    background:var(--card-bg);
-    border-radius:10px;
-    overflow:hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-    transition: transform 0.2s;
-    display:flex;
-    flex-direction:column;
-    min-height:220px;
-    position:relative;
-  }
-  .video-card:hover{ transform: translateY(-6px) scale(1.02); }
-
-  .thumb-wrap{
-    width:100%;
-    height:170px;
-    background:#111;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-  }
-  .thumb-wrap img{
-    width:100%; height:100%; object-fit:cover; display:block;
-  }
-  .thumb-wrap iframe{
-    width:100%; height:100%; border:0;
-  }
-
-  .meta{
-    padding:10px 12px 14px 12px;
-    flex:1;
-  }
-  .meta h3{
-    font-size:15px; margin:0 0 6px 0; line-height:1.2; color:#fff;
-  }
-  .meta p{ margin:0; font-size:13px; color:#cfcfcf; height:38px; overflow:hidden; }
-
-  /* 로딩 스피너(하단) */
-  #loading{
-    text-align:center;
-    padding:14px;
-    color:#ddd;
-    width:100%;
-  }
-
-  /* 모바일 대응 */
-  @media (max-width:640px){
-    .search-container input{ width:60vw; }
-    .video-card{ width:92vw; max-width:420px;}
-  }
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #121212;
+        color: white;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        transition: background 0.5s ease;
+    }
+    .day-theme {
+        background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80') no-repeat center center/cover;
+    }
+    .night-theme {
+        background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80') no-repeat center center/cover;
+    }
+    header {
+        background-color: rgba(51, 51, 51, 0.8);
+        padding: 10px 20px;
+        text-align: center;
+    }
+    h1 { margin: 0; font-size: 24px; }
+    .red { color: red; cursor: pointer; }
+    .search-container {
+        display: flex; justify-content: center; padding: 20px; gap: 10px;
+    }
+    .search-container input {
+        padding: 10px; font-size: 16px; border: 1px solid #333;
+        background-color: #222; color: white; width: 300px;
+    }
+    .search-container button {
+        padding: 10px; background-color: #ff5722; color: white; border: none; cursor: pointer;
+    }
+    .search-container button:hover { background-color: #e64a19; }
+    #themeToggle {
+        font-size: 20px; background-color: #333; border-radius: 50%;
+        width: 40px; height: 40px; display: flex; align-items: center;
+        justify-content: center; transition: transform 0.6s;
+    }
+    .rotating { animation: rotateIcon 0.6s ease-in-out; }
+    @keyframes rotateIcon {
+        0% { transform: rotateY(0deg); }
+        50% { transform: rotateY(90deg); }
+        100% { transform: rotateY(180deg); }
+    }
+    .sparkle {
+        position: relative;
+    }
+    .sparkle::after {
+        content: "✨";
+        position: absolute;
+        animation: sparkleAnim 1s infinite alternate;
+        font-size: 12px;
+        top: -5px;
+        right: -5px;
+    }
+    @keyframes sparkleAnim {
+        0% { opacity: 0.2; transform: scale(0.8) rotate(0deg); }
+        100% { opacity: 1; transform: scale(1.2) rotate(20deg); }
+    }
+    .results {
+        display: flex; flex-wrap: wrap; justify-content: center;
+        padding: 20px; gap: 20px;
+    }
+    .video-card {
+        background-color: rgba(34, 34, 34, 0.85);
+        border-radius: 8px; width: 300px; overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s;
+    }
+    .video-card:hover { transform: scale(1.03); }
+    .video-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-bottom: 1px solid #444;
+    }
+    .video-card h3 {
+        font-size: 18px; margin: 10px;
+    }
+    .video-card p {
+        font-size: 14px; margin: 10px; color: #bbb;
+    }
 </style>
 </head>
 <body class="day-theme">
-  <div class="starfield" id="starfield"></div>
 
-  <header>
-    <h1><span class="red" onclick="goToYouTube()">YouTube</span> 영상 검색</h1>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <div class="search-container" style="margin:0;padding:0;">
-        <input id="query" placeholder="검색어를 입력하세요..." />
-        <button class="btn search" onclick="searchVideos(true)">검색</button>
-        <button id="themeToggle" title="테마 변경">☀️</button>
-      </div>
-    </div>
-  </header>
+<header>
+    <h1>
+        <span class="red" onclick="goToYouTube()">YouTube</span>
+        <span onclick="refreshPage()"> 영상 검색</span>
+    </h1>
+</header>
 
-  <main>
-    <div id="results"></div>
-    <div id="loading" style="display:none">로딩 중...</div>
-  </main>
+<div class="search-container">
+    <input type="text" id="query" placeholder="검색어를 입력하세요...">
+    <button onclick="searchVideos(true)">검색</button>
+    <button id="themeToggle">☀️</button>
+</div>
+
+<div class="results" id="results"></div>
 
 <script>
-/* ====== 설정 ====== */
-const API_KEY = 'AIzaSyAnSoP1UOyYDxhGlVX-6TUNOkuMovKl_Wk'; // <- 여기에 본인 YouTube Data API v3 키 넣기
-let nextPageToken = '';
-let currentQuery = '';
-let isLoading = false;
+const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js"; // 여기에 유효한 API 키 넣기
+let currentQuery = "";
+let nextPageToken = "";
 
-/* ====== 유틸 / 스타필드 (night 시) ====== */
-function makeStarfield(count=60){
-  const container = document.getElementById('starfield');
-  container.innerHTML='';
-  const vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-  const vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-  for(let i=0;i<count;i++){
-    const s=document.createElement('div');
-    s.className='star';
-    s.style.left = Math.random()*100 + '%';
-    s.style.top = Math.random()*100 + '%';
-    const d = 1 + Math.random()*2;
-    s.style.width = s.style.height = d+'px';
-    s.style.animationDuration = (2 + Math.random()*3)+'s';
-    container.appendChild(s);
-  }
-}
-makeStarfield(70);
+function searchVideos(reset = false) {
+    const queryInput = document.getElementById("query").value.trim();
+    if (reset) {
+        currentQuery = queryInput;
+        nextPageToken = "";
+        document.getElementById("results").innerHTML = "";
+    }
+    if (!currentQuery) return;
 
-/* ====== 검색 함수 (버그 수정 포함) ====== */
-async function searchVideos(reset=false){
-  const rawQuery = document.getElementById('query').value.trim();
-  if (reset){
-    currentQuery = rawQuery;
-    nextPageToken = '';
-    document.getElementById('results').innerHTML = '';
-  }
-  if (!currentQuery) return;
-
-  if (isLoading) return;
-  isLoading = true;
-  document.getElementById('loading').style.display='block';
-
-  try {
-    let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=50&q=${encodeURIComponent(currentQuery)}&key=${API_KEY}`;
-    if (nextPageToken) url += `&pageToken=${nextPageToken}`;
-
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
-
-    if (!data.items || data.items.length === 0){
-      if (!nextPageToken) console.warn('검색 결과 없음');
-      isLoading = false;
-      document.getElementById('loading').style.display='none';
-      return;
+    let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(currentQuery)}&key=${API_KEY}`;
+    if (nextPageToken) {
+        url += `&pageToken=${nextPageToken}`;
     }
 
-    nextPageToken = data.nextPageToken || '';
-    appendResults(data.items);
-  } catch (err){
-    console.error('Error fetching videos:', err);
-    // 간단한 사용자 피드백
-    if (!document.getElementById('errorBox')){
-      const div = document.createElement('div');
-      div.id='errorBox';
-      div.style.padding='10px';
-      div.style.textAlign='center';
-      div.style.color='#ffdddd';
-      div.textContent = '검색 중 오류가 발생했습니다. 콘솔을 확인하세요.';
-      document.body.insertBefore(div, document.body.firstChild.nextSibling);
+    fetch(url)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            if (!data.items || data.items.length === 0) {
+                console.warn("검색 결과 없음");
+                return;
+            }
+            nextPageToken = data.nextPageToken || "";
+            const results = document.getElementById("results");
+
+            data.items.forEach(item => {
+                if (!item.id || !item.id.videoId) return;
+                const videoCard = document.createElement("div");
+                videoCard.className = "video-card";
+                videoCard.innerHTML = `
+                    <a href="https://www.youtube.com/watch?v=${item.id.videoId}" target="_blank">
+                        <img src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
+                        <h3>${item.snippet.title}</h3>
+                        <p>${item.snippet.description}</p>
+                    </a>
+                `;
+                // 미리보기
+                videoCard.addEventListener("mouseenter", () => {
+                    const iframe = document.createElement("iframe");
+                    iframe.src = `https://www.youtube.com/embed/${item.id.videoId}?autoplay=1&mute=1`;
+                    iframe.width = "100%";
+                    iframe.height = "180";
+                    iframe.frameBorder = "0";
+                    iframe.allow = "autoplay; encrypted-media";
+                    videoCard.innerHTML = "";
+                    videoCard.appendChild(iframe);
+                });
+                videoCard.addEventListener("mouseleave", () => {
+                    videoCard.innerHTML = `
+                        <a href="https://www.youtube.com/watch?v=${item.id.videoId}" target="_blank">
+                            <img src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
+                            <h3>${item.snippet.title}</h3>
+                            <p>${item.snippet.description}</p>
+                        </a>
+                    `;
+                });
+                results.appendChild(videoCard);
+            });
+        })
+        .catch(err => console.error("Error fetching videos:", err));
+}
+
+// 무한 스크롤
+window.addEventListener("scroll", () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && nextPageToken) {
+        searchVideos(false);
     }
-  } finally {
-    isLoading = false;
-    document.getElementById('loading').style.display = nextPageToken ? 'block' : 'none';
-  }
-}
-
-/* ====== 결과 렌더링 + 마우스오버 미리보기 ====== */
-function appendResults(items){
-  const results = document.getElementById('results');
-
-  items.forEach(item => {
-    // videoId 없으면 건너뜀 (중요)
-    const vid = item.id && item.id.videoId ? item.id.videoId : null;
-    if (!vid) return;
-
-    const card = document.createElement('div');
-    card.className = 'video-card';
-
-    // 썸네일 래퍼 (이곳에서 iframe으로 대체)
-    const thumbWrap = document.createElement('div');
-    thumbWrap.className = 'thumb-wrap';
-    const thumbImg = document.createElement('img');
-    thumbImg.src = (item.snippet.thumbnails && item.snippet.thumbnails.high && item.snippet.thumbnails.high.url) ? item.snippet.thumbnails.high.url : '';
-    thumbImg.alt = item.snippet.title || '';
-    thumbWrap.appendChild(thumbImg);
-
-    const meta = document.createElement('div');
-    meta.className = 'meta';
-    const title = document.createElement('h3');
-    title.textContent = item.snippet.title || '제목 없음';
-    const desc = document.createElement('p');
-    desc.textContent = item.snippet.description || '';
-
-    meta.appendChild(title);
-    meta.appendChild(desc);
-
-    card.appendChild(thumbWrap);
-    card.appendChild(meta);
-    results.appendChild(card);
-
-    // 미리보기: mouseenter -> iframe, mouseleave -> 복구
-    let previewIframe = null;
-    let previewTimeout = null;
-
-    thumbWrap.addEventListener('mouseenter', () => {
-      // 짧은 지연으로 의도치 않은 hover 방지
-      previewTimeout = setTimeout(() => {
-        // 이미 있으면 무시
-        if (previewIframe) return;
-        previewIframe = document.createElement('iframe');
-        previewIframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&mute=1&rel=0&modestbranding=1`;
-        previewIframe.allow = 'autoplay; encrypted-media; picture-in-picture';
-        previewIframe.setAttribute('allowfullscreen','');
-        thumbWrap.innerHTML = '';
-        thumbWrap.appendChild(previewIframe);
-      }, 160); // 160ms 지연
-    });
-
-    thumbWrap.addEventListener('mouseleave', () => {
-      if (previewTimeout) { clearTimeout(previewTimeout); previewTimeout = null; }
-      if (previewIframe){
-        // iframe 제거하고 img 복구
-        previewIframe.remove();
-        previewIframe = null;
-        thumbWrap.innerHTML = '';
-        thumbWrap.appendChild(thumbImg);
-      }
-    });
-
-    // 클릭하면 유튜브 새탭으로 이동
-    card.addEventListener('click', (e) => {
-      // 클릭 시 전체 카드를 링크로 사용: 유튜브 열기
-      if (e.target.tagName !== 'A' && e.target.tagName !== 'IFRAME') {
-        window.open(`https://www.youtube.com/watch?v=${vid}`, '_blank');
-      }
-    });
-  });
-}
-
-/* ====== 무한 스크롤 (하단 접근 시 다음 페이지 호출) ====== */
-window.addEventListener('scroll', () => {
-  const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 600;
-  if (nearBottom && nextPageToken && !isLoading){
-    searchVideos(false);
-  }
 });
 
-/* ====== 테마 토글(회전 + 이모지 + 반짝이) ====== */
-const themeBtn = document.getElementById('themeToggle');
-themeBtn.addEventListener('click', () => {
-  const body = document.body;
-  themeBtn.classList.add('rotating');
-
-  setTimeout(() => {
-    const isDay = body.classList.contains('day-theme') || !body.classList.contains('night-theme');
-    if (isDay){
-      body.classList.remove('day-theme');
-      body.classList.add('night-theme');
-      themeBtn.textContent = '⭐';
-      themeBtn.classList.add('twinkling');
-      // 더 많은 별이 필요하면 다시 생성
-      makeStarfield(90);
-    } else {
-      body.classList.remove('night-theme');
-      body.classList.add('day-theme');
-      themeBtn.textContent = '☀️';
-      themeBtn.classList.remove('twinkling');
-      makeStarfield(70);
-    }
-  }, 300);
-
-  setTimeout(()=> themeBtn.classList.remove('rotating'), 620);
+// 테마 토글
+document.getElementById("themeToggle").addEventListener("click", function() {
+    const body = document.body;
+    const btn = this;
+    btn.classList.add("rotating");
+    setTimeout(() => {
+        if (body.classList.contains("day-theme")) {
+            body.classList.remove("day-theme");
+            body.classList.add("night-theme");
+            btn.textContent = "⭐";
+            btn.classList.add("sparkle");
+        } else {
+            body.classList.remove("night-theme");
+            body.classList.add("day-theme");
+            btn.textContent = "☀️";
+            btn.classList.remove("sparkle");
+        }
+    }, 300);
+    setTimeout(() => btn.classList.remove("rotating"), 600);
 });
 
-/* 초기 테마 세팅 */
-(function init(){
-  document.body.classList.add('day-theme');
-  // 입력에서 Enter로 검색
-  document.getElementById('query').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') searchVideos(true);
-  });
-})();
-
-/* 탐색 버튼 */
-function goToYouTube(){ window.location.href = 'https://www.youtube.com'; }
+function goToYouTube() {
+    window.location.href = "https://www.youtube.com";
+}
+function refreshPage() {
+    location.reload();
+}
 </script>
+
 </body>
 </html>
