@@ -1,95 +1,144 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YouTube 영상 검색</title>
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: hsl(220, 80%, 40%);
-        color: white;
-        transition: background-color 0.1s linear;
-    }
-    header {
-        position: sticky;
-        top: 0;
-        background: rgba(0,0,0,0.8);
-        padding: 15px;
-        text-align: center;
-        z-index: 10;
-    }
-    .search-container {
-        display: flex;
-        justify-content: center;
-        gap: 5px;
-    }
-    .search-container input {
-        padding: 10px;
-        font-size: 16px;
-        border: none;
-        outline: none;
-        background-color: #222;
-        color: white;
-        width: 300px;
-        border-radius: 4px;
-    }
-    .search-container button {
-        padding: 10px 15px;
-        background-color: #ff5722;
-        border: none;
-        color: white;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-    .search-container button:hover {
-        background-color: #e64a19;
-    }
-    .channel-link {
-        margin-top: 10px;
-        font-size: 14px;
-    }
-    .channel-link a {
-        color: #4fc3f7;
-        text-decoration: none;
-    }
-    .results {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-        padding: 20px;
-    }
-    .video-card {
-        background-color: #222;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        transition: transform 0.2s ease;
-    }
-    .video-card:hover {
-        transform: scale(1.03);
-    }
-    .video-card img, .video-card iframe {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-        border: none;
-    }
-    .video-card h3 {
-        font-size: 16px;
-        margin: 10px;
-    }
-    .video-card p {
-        font-size: 14px;
-        margin: 10px;
-        color: #bbb;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 영상 검색</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: hsl(220, 80%, 40%);
+            color: white;
+            transition: background-color 0.1s linear;
+        }
+
+        header {
+            padding: 15px;
+            text-align: center;
+            background-color: rgba(0,0,0,0.3);
+        }
+
+        .site-title {
+            font-size: 28px;
+            margin: 0 0 10px;
+        }
+
+        .youtube-text {
+            color: red;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .youtube-text:hover {
+            text-decoration: underline;
+        }
+
+        .search-text {
+            cursor: pointer;
+            font-weight: bold;
+            background: linear-gradient(270deg, #ff5722, #ffeb3b, #4caf50, #2196f3, #9c27b0);
+            background-size: 1000% 1000%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 5s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .search-container input {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            background-color: #222;
+            color: white;
+            width: 300px;
+            border-radius: 5px;
+        }
+
+        .search-container button {
+            padding: 10px 15px;
+            background-color: #ff5722;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .search-container button:hover {
+            background-color: #e64a19;
+        }
+
+        .channel-link {
+            margin-top: 10px;
+        }
+
+        .channel-link a {
+            color: #ffeb3b;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .video-card {
+            background-color: #222;
+            border-radius: 8px;
+            width: 300px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .video-card:hover {
+            transform: scale(1.05);
+        }
+
+        .video-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .video-card h3 {
+            font-size: 16px;
+            margin: 10px;
+        }
+
+        .video-card p {
+            font-size: 14px;
+            margin: 10px;
+            color: #bbb;
+        }
+    </style>
 </head>
 <body>
 
 <header>
+    <h1 class="site-title">
+        <a href="https://www.youtube.com" target="_blank" class="youtube-text">YouTube</a>
+        <span class="search-text" onclick="location.reload()"> 영상 검색</span>
+    </h1>
     <div class="search-container">
         <input type="text" id="query" placeholder="검색어를 입력하세요...">
         <button onclick="searchVideos(true)">검색</button>
@@ -100,11 +149,11 @@
 <div class="results" id="results"></div>
 
 <script>
-    const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js";
-    let nextPageToken = "";
-    let currentQuery = "";
+    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
+    let nextPageToken = '';
+    let currentQuery = '';
 
-    // 부드러운 배경색 변화
+    // 배경색 스크롤 변화
     window.addEventListener("scroll", () => {
         let scrollTop = window.scrollY;
         let docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -113,12 +162,13 @@
         document.body.style.backgroundColor = `hsl(${hue}, 80%, 40%)`;
     });
 
+    // 검색 실행
     async function searchVideos(isNewSearch = false) {
         if (isNewSearch) {
-            document.getElementById("results").innerHTML = "";
-            document.getElementById("channelLink").innerHTML = "";
-            nextPageToken = "";
-            currentQuery = document.getElementById("query").value.trim();
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('channelLink').innerHTML = '';
+            nextPageToken = '';
+            currentQuery = document.getElementById('query').value.trim();
         }
         if (!currentQuery) return;
 
@@ -126,69 +176,54 @@
         if (nextPageToken) url += `&pageToken=${nextPageToken}`;
 
         try {
-            const res = await fetch(url);
-            const data = await res.json();
-            nextPageToken = data.nextPageToken || "";
+            const response = await fetch(url);
+            const data = await response.json();
+            nextPageToken = data.nextPageToken || '';
 
-            const results = document.getElementById("results");
+            const results = document.getElementById('results');
 
-            // 첫 번째 검색 결과 채널 링크 표시
-            if (isNewSearch && data.items.length > 0) {
-                let channelId = data.items[0].snippet.channelId;
-                let channelTitle = data.items[0].snippet.channelTitle;
-                document.getElementById("channelLink").innerHTML =
-                    `채널 바로가기: <a href="https://www.youtube.com/channel/${channelId}" target="_blank">${channelTitle}</a>`;
-            }
-
-            // 결과 카드 생성
-            data.items.forEach(item => {
+            data.items.forEach((item, index) => {
                 const videoId = item.id.videoId;
                 const thumbnailUrl = item.snippet.thumbnails.high.url;
+                const channelId = item.snippet.channelId;
 
-                const videoCard = document.createElement("div");
-                videoCard.className = "video-card";
+                // 첫 번째 결과 → 채널 링크 표시
+                if (index === 0 && isNewSearch) {
+                    document.getElementById('channelLink').innerHTML =
+                        `<a href="https://www.youtube.com/channel/${channelId}" target="_blank">채널로 이동</a>`;
+                }
+
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
                 videoCard.innerHTML = `
-                    <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" class="video-link">
+                    <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
                         <img src="${thumbnailUrl}" alt="${item.snippet.title}">
                         <h3>${item.snippet.title}</h3>
                         <p>${item.snippet.description}</p>
                     </a>
                 `;
 
-                // 마우스 올리면 미리보기
-                const link = videoCard.querySelector(".video-link");
-                const img = videoCard.querySelector("img");
-
-                videoCard.addEventListener("mouseenter", () => {
-                    const iframe = document.createElement("iframe");
-                    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0`;
-                    iframe.allow = "autoplay";
-                    link.replaceChild(iframe, img);
-                });
-
-                videoCard.addEventListener("mouseleave", () => {
-                    if (link.querySelector("iframe")) {
-                        link.replaceChild(img, link.querySelector("iframe"));
-                    }
-                });
-
                 results.appendChild(videoCard);
             });
-
-        } catch (err) {
-            console.error("검색 오류:", err);
+        } catch (error) {
+            console.error('영상 검색 오류:', error);
         }
     }
 
     // 무한 스크롤
-    let scrollTimer;
-    window.addEventListener("scroll", () => {
-        clearTimeout(scrollTimer);
-        scrollTimer = setTimeout(() => {
-            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-                if (nextPageToken) searchVideos(false);
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+            if (nextPageToken) {
+                searchVideos(false);
             }
-        }, 100);
+        }
+    });
+
+    // 엔터 키 검색
+    document.getElementById('query').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            searchVideos(true);
+        }
     });
 </script>
 
