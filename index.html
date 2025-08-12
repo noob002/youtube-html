@@ -1,79 +1,101 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YouTube 영상 검색</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        color: white;
-        margin: 0;
-        padding: 0;
-        overflow-x: hidden;
-        background: linear-gradient(to bottom, #1a237e, #0d47a1);
-        transition: background 0.3s ease;
-    }
-    header {
-        background-color: rgba(51, 51, 51, 0.8);
-        padding: 10px 20px;
-        text-align: center;
-    }
-    h1 { margin: 0; font-size: 24px; }
-    .red { color: red; cursor: pointer; }
-    .search-container {
-        display: flex; justify-content: center; padding: 20px; gap: 10px;
-    }
-    .search-container input {
-        padding: 10px; font-size: 16px; border: 1px solid #333;
-        background-color: #222; color: white; width: 300px;
-    }
-    .search-container button {
-        padding: 10px; background-color: #ff5722; color: white; border: none; cursor: pointer;
-    }
-    .search-container button:hover { background-color: #e64a19; }
-    .results {
-        display: flex; flex-wrap: wrap; justify-content: center;
-        padding: 20px; gap: 20px;
-    }
-    .video-card {
-        background-color: rgba(34, 34, 34, 0.85);
-        border-radius: 8px; width: 300px; overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        transition: transform 0.3s;
-        position: relative;
-    }
-    .video-card:hover { transform: scale(1.03); }
-    .thumbnail, .preview {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-        display: block;
-    }
-    .preview {
-        position: absolute;
-        top: 0;
-        left: 0;
-        border: none;
-        display: none;
-    }
-    .video-card:hover .thumbnail { display: none; }
-    .video-card:hover .preview { display: block; }
-    .video-card h3 {
-        font-size: 18px; margin: 10px;
-    }
-    .video-card p {
-        font-size: 14px; margin: 10px; color: #bbb;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube 영상 검색</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: hsl(220, 80%, 40%);
+            color: white;
+            transition: background-color 0.1s linear;
+        }
+
+        header {
+            padding: 15px;
+            text-align: center;
+            background-color: rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .search-container input {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            background-color: #222;
+            color: white;
+            width: 300px;
+        }
+
+        .search-container button {
+            padding: 10px 15px;
+            background-color: #ff5722;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .search-container button:hover {
+            background-color: #e64a19;
+        }
+
+        .results {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .video-card {
+            background-color: #222;
+            border-radius: 8px;
+            width: 300px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .video-card:hover {
+            transform: scale(1.05);
+        }
+
+        .video-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .video-card h3 {
+            font-size: 16px;
+            margin: 10px;
+        }
+
+        .video-card p {
+            font-size: 14px;
+            margin: 10px;
+            color: #bbb;
+        }
+    </style>
 </head>
 <body>
 
 <header>
-    <h1>
-        <span class="red" onclick="goToYouTube()">YouTube</span>
-        <span onclick="refreshPage()"> 영상 검색</span>
-    </h1>
+    <h1>YouTube 영상 검색</h1>
 </header>
 
 <div class="search-container">
@@ -84,79 +106,64 @@
 <div class="results" id="results"></div>
 
 <script>
-const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js"; // 유효한 API 키로 교체
-let currentQuery = "";
-let nextPageToken = "";
+    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
+    let nextPageToken = '';
+    let currentQuery = '';
 
-function searchVideos(reset = false) {
-    const queryInput = document.getElementById("query").value.trim();
-    if (reset) {
-        currentQuery = queryInput;
-        nextPageToken = "";
-        document.getElementById("results").innerHTML = "";
-    }
-    if (!currentQuery) return;
+    // 스크롤에 따라 배경색 부드럽게 변화
+    window.addEventListener("scroll", () => {
+        let scrollTop = window.scrollY;
+        let docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        let scrollPercent = scrollTop / docHeight;
+        let hue = 220 + (scrollPercent * 60); // 220~280
+        document.body.style.backgroundColor = `hsl(${hue}, 80%, 40%)`;
+    });
 
-    let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(currentQuery)}&key=${API_KEY}`;
-    if (nextPageToken) {
-        url += `&pageToken=${nextPageToken}`;
-    }
+    async function searchVideos(isNewSearch = false) {
+        if (isNewSearch) {
+            document.getElementById('results').innerHTML = '';
+            nextPageToken = '';
+            currentQuery = document.getElementById('query').value.trim();
+        }
+        if (!currentQuery) return;
 
-    fetch(url)
-        .then(res => {
-            if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-            return res.json();
-        })
-        .then(data => {
-            if (!data.items || data.items.length === 0) {
-                console.warn("검색 결과 없음");
-                return;
-            }
-            nextPageToken = data.nextPageToken || "";
-            const results = document.getElementById("results");
+        let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(currentQuery)}&type=video&maxResults=20&key=${API_KEY}`;
+        if (nextPageToken) {
+            url += `&pageToken=${nextPageToken}`;
+        }
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            nextPageToken = data.nextPageToken || '';
+
+            const results = document.getElementById('results');
 
             data.items.forEach(item => {
-                if (!item.id || !item.id.videoId) return;
-                const videoCard = document.createElement("div");
-                videoCard.className = "video-card";
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
                 videoCard.innerHTML = `
                     <a href="https://www.youtube.com/watch?v=${item.id.videoId}" target="_blank">
-                        <img class="thumbnail" src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
-                        <iframe class="preview" src="https://www.youtube.com/embed/${item.id.videoId}?autoplay=1&mute=1" allow="autoplay; encrypted-media"></iframe>
+                        <img src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
                         <h3>${item.snippet.title}</h3>
                         <p>${item.snippet.description}</p>
                     </a>
                 `;
                 results.appendChild(videoCard);
             });
-        })
-        .catch(err => console.error("Error fetching videos:", err));
-}
-
-// 무한 스크롤
-window.addEventListener("scroll", () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && nextPageToken) {
-        searchVideos(false);
+        } catch (error) {
+            console.error('영상 검색 오류:', error);
+        }
     }
-});
 
-// 스크롤 그라데이션 배경
-window.addEventListener("scroll", () => {
-    let scrollTop = window.scrollY;
-    let docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    let scrollPercent = scrollTop / docHeight;
-    let r = Math.floor(26 + (255 - 26) * scrollPercent);
-    let g = Math.floor(35 + (64 - 35) * scrollPercent);
-    let b = Math.floor(126 + (129 - 126) * scrollPercent);
-    document.body.style.background = `linear-gradient(to bottom, rgb(${r},${g},${b}), rgb(13,71,161))`;
-});
-
-function goToYouTube() {
-    window.location.href = "https://www.youtube.com";
-}
-function refreshPage() {
-    location.reload();
-}
+    // 무한 스크롤 로딩
+    window.addEventListener('scroll', () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+            if (nextPageToken) {
+                searchVideos(false);
+            }
+        }
+    });
 </script>
 
 </body>
