@@ -12,10 +12,21 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        /* 낮 테마 */
+        .day-theme {
+            background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80') no-repeat center center/cover;
+        }
+
+        /* 밤 테마 */
+        .night-theme {
+            background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80') no-repeat center center/cover;
         }
 
         header {
-            background-color: #333;
+            background-color: rgba(51, 51, 51, 0.8);
             padding: 10px 20px;
             text-align: center;
         }
@@ -34,6 +45,7 @@
             display: flex;
             justify-content: center;
             padding: 20px;
+            gap: 10px;
         }
 
         .search-container input {
@@ -47,7 +59,6 @@
 
         .search-container button {
             padding: 10px;
-            margin-left: 10px;
             background-color: #ff5722;
             color: white;
             border: none;
@@ -56,6 +67,42 @@
 
         .search-container button:hover {
             background-color: #e64a19;
+        }
+
+        /* ☀️/⭐ 토글 버튼 스타일 */
+        #themeToggle {
+            font-size: 20px;
+            background-color: #333;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.6s;
+            perspective: 500px;
+        }
+
+        /* 회전 애니메이션 */
+        .rotating {
+            animation: rotateIcon 0.6s ease-in-out;
+        }
+
+        @keyframes rotateIcon {
+            0% { transform: rotateY(0deg); }
+            50% { transform: rotateY(90deg); }
+            100% { transform: rotateY(180deg); }
+        }
+
+        /* ⭐ 반짝이 효과 */
+        .twinkling {
+            animation: twinkle 1.5s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #ffdd55; }
+            50% { text-shadow: 0 0 6px #fff, 0 0 12px #ffffaa, 0 0 18px #ffdd55; }
+            100% { text-shadow: 0 0 4px #fff, 0 0 8px #fff, 0 0 12px #ffdd55; }
         }
 
         .results {
@@ -67,7 +114,7 @@
         }
 
         .video-card {
-            background-color: #222;
+            background-color: rgba(34, 34, 34, 0.85);
             border-radius: 8px;
             width: 300px;
             overflow: hidden;
@@ -91,7 +138,7 @@
         }
     </style>
 </head>
-<body>
+<body class="day-theme">
 
 <header>
     <h1>
@@ -103,12 +150,13 @@
 <div class="search-container">
     <input type="text" id="query" placeholder="검색어를 입력하세요...">
     <button onclick="searchVideos()">검색</button>
+    <button id="themeToggle">☀️</button>
 </div>
 
 <div class="results" id="results"></div>
 
 <script>
-    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
+    const API_KEY = 'YOUR_API_KEY'; // 기존 API 키 사용
 
     function searchVideos() {
         const query = document.getElementById('query').value.trim();
@@ -143,6 +191,32 @@
     function refreshPage() {
         location.reload();
     }
+
+    // 테마 토글 기능 + 회전 + 별 반짝이 효과
+    document.getElementById('themeToggle').addEventListener('click', function() {
+        const body = document.body;
+        const btn = this;
+
+        btn.classList.add('rotating');
+
+        setTimeout(() => {
+            if (body.classList.contains('day-theme')) {
+                body.classList.remove('day-theme');
+                body.classList.add('night-theme');
+                btn.textContent = '⭐';
+                btn.classList.add('twinkling'); // 반짝이 효과 추가
+            } else {
+                body.classList.remove('night-theme');
+                body.classList.add('day-theme');
+                btn.textContent = '☀️';
+                btn.classList.remove('twinkling'); // 반짝이 효과 제거
+            }
+        }, 300);
+
+        setTimeout(() => {
+            btn.classList.remove('rotating');
+        }, 600);
+    });
 </script>
 
 </body>
