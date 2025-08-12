@@ -1,143 +1,122 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube 영상 검색</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: hsl(220, 80%, 40%);
-            color: white;
-            transition: background-color 0.1s linear;
-        }
-
-        header {
-            padding: 15px;
-            text-align: center;
-            background-color: rgba(0,0,0,0.3);
-        }
-
-        .site-title {
-            font-size: 28px;
-            margin: 0 0 10px;
-        }
-
-        .youtube-text {
-            color: red;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .youtube-text:hover {
-            text-decoration: underline;
-        }
-
-        .search-text {
-            cursor: pointer;
-            font-weight: bold;
-            background: linear-gradient(270deg, #ff5722, #ffeb3b, #4caf50, #2196f3, #9c27b0);
-            background-size: 1000% 1000%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientShift 5s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .search-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px;
-        }
-
-        .search-container input {
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            outline: none;
-            background-color: #222;
-            color: white;
-            width: 300px;
-            border-radius: 5px;
-        }
-
-        .search-container button {
-            padding: 10px 15px;
-            background-color: #ff5722;
-            border: none;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .search-container button:hover {
-            background-color: #e64a19;
-        }
-
-        .channel-link {
-            margin-top: 10px;
-        }
-
-        .channel-link a {
-            color: #ffeb3b;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .results {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        .video-card {
-            background-color: #222;
-            border-radius: 8px;
-            width: 300px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
-            position: relative;
-        }
-
-        .video-card:hover {
-            transform: scale(1.05);
-        }
-
-        .video-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-
-        .video-card h3 {
-            font-size: 16px;
-            margin: 10px;
-        }
-
-        .video-card p {
-            font-size: 14px;
-            margin: 10px;
-            color: #bbb;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube 영상 검색</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background-color: hsl(220, 80%, 40%);
+        color: white;
+        transition: background-color 0.2s linear;
+    }
+    header {
+        text-align: center;
+        padding: 15px;
+        background-color: #111;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    .site-title {
+        font-size: 28px;
+        margin: 0 0 10px;
+    }
+    .youtube-text {
+        color: red;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .youtube-text:hover {
+        text-decoration: underline;
+    }
+    .search-text {
+        cursor: pointer;
+        font-weight: bold;
+        background: linear-gradient(270deg, #ff5722, #ffeb3b, #4caf50, #2196f3, #9c27b0);
+        background-size: 1000% 1000%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradientShift 5s ease infinite;
+    }
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    .search-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+    .search-container input {
+        padding: 10px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        width: 300px;
+    }
+    .search-container button {
+        padding: 10px;
+        background-color: #ff5722;
+        border: none;
+        color: white;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    .search-container button:hover {
+        background-color: #e64a19;
+    }
+    .channel-link {
+        margin-top: 10px;
+    }
+    .channel-link a {
+        color: #4cafef;
+        text-decoration: none;
+    }
+    .results {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px;
+    }
+    .video-card {
+        background-color: #222;
+        border-radius: 8px;
+        width: 300px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    .video-card img {
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+    }
+    .video-card h3 {
+        font-size: 16px;
+        margin: 10px;
+    }
+    .video-card p {
+        font-size: 14px;
+        margin: 10px;
+        color: #bbb;
+    }
+    #loadingSpinner {
+        text-align: center;
+        padding: 20px;
+        display: none;
+    }
+</style>
 </head>
 <body>
 
 <header>
     <h1 class="site-title">
         <a href="https://www.youtube.com" target="_blank" class="youtube-text">YouTube</a>
-        <span class="search-text" onclick="location.reload()"> 영상 검색</span>
+        <span class="search-text" onclick="location.reload()">영상 검색</span>
     </h1>
     <div class="search-container">
         <input type="text" id="query" placeholder="검색어를 입력하세요...">
@@ -147,13 +126,14 @@
 </header>
 
 <div class="results" id="results"></div>
+<div id="loadingSpinner">🔄 로딩 중...</div>
 
 <script>
-    const API_KEY = 'AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js';
-    let nextPageToken = '';
-    let currentQuery = '';
+    const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js"; // 반드시 실제 키로 변경
+    let nextPageToken = "";
+    let currentQuery = "";
+    let isLoading = false;
 
-    // 배경색 스크롤 변화
     window.addEventListener("scroll", () => {
         let scrollTop = window.scrollY;
         let docHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -162,15 +142,22 @@
         document.body.style.backgroundColor = `hsl(${hue}, 80%, 40%)`;
     });
 
-    // 검색 실행
     async function searchVideos(isNewSearch = false) {
+        if (isLoading) return;
+        isLoading = true;
+        document.getElementById('loadingSpinner').style.display = 'block';
+
         if (isNewSearch) {
             document.getElementById('results').innerHTML = '';
             document.getElementById('channelLink').innerHTML = '';
             nextPageToken = '';
             currentQuery = document.getElementById('query').value.trim();
         }
-        if (!currentQuery) return;
+        if (!currentQuery) {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            isLoading = false;
+            return;
+        }
 
         let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(currentQuery)}&type=video&maxResults=20&key=${API_KEY}`;
         if (nextPageToken) url += `&pageToken=${nextPageToken}`;
@@ -178,21 +165,21 @@
         try {
             const response = await fetch(url);
             const data = await response.json();
+            if (!data.items || data.items.length === 0) {
+                if (isNewSearch) {
+                    document.getElementById('results').innerHTML = `<p style="text-align:center; color:#bbb;">검색 결과가 없습니다.</p>`;
+                }
+                return;
+            }
             nextPageToken = data.nextPageToken || '';
-
             const results = document.getElementById('results');
-
             data.items.forEach((item, index) => {
                 const videoId = item.id.videoId;
                 const thumbnailUrl = item.snippet.thumbnails.high.url;
                 const channelId = item.snippet.channelId;
-
-                // 첫 번째 결과 → 채널 링크 표시
-                if (index === 0 && isNewSearch) {
-                    document.getElementById('channelLink').innerHTML =
-                        `<a href="https://www.youtube.com/channel/${channelId}" target="_blank">채널로 이동</a>`;
+                if (index === 0 && isNewSearch && channelId) {
+                    document.getElementById('channelLink').innerHTML = `<a href="https://www.youtube.com/channel/${channelId}" target="_blank">채널로 이동</a>`;
                 }
-
                 const videoCard = document.createElement('div');
                 videoCard.className = 'video-card';
                 videoCard.innerHTML = `
@@ -202,28 +189,27 @@
                         <p>${item.snippet.description}</p>
                     </a>
                 `;
-
                 results.appendChild(videoCard);
             });
         } catch (error) {
-            console.error('영상 검색 오류:', error);
+            console.error("영상 검색 오류:", error);
+            if (isNewSearch) {
+                document.getElementById('results').innerHTML = `<p style="text-align:center; color:#ff5555;">오류가 발생했습니다. API 키를 확인하세요.</p>`;
+            }
+        } finally {
+            document.getElementById('loadingSpinner').style.display = 'none';
+            isLoading = false;
         }
     }
 
-    // 무한 스크롤
     window.addEventListener('scroll', () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-            if (nextPageToken) {
-                searchVideos(false);
-            }
+            if (nextPageToken) searchVideos(false);
         }
     });
 
-    // 엔터 키 검색
     document.getElementById('query').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            searchVideos(true);
-        }
+        if (e.key === 'Enter') searchVideos(true);
     });
 </script>
 
