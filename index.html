@@ -1,257 +1,331 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>YouTube 영상 검색</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        color: white;
-        background: linear-gradient(to bottom, #1a1a1a, #0d0d0d, #1a1a1a);
-        background-attachment: fixed;
-        overflow-x: hidden;
-    }
-    header {
-        padding: 15px;
-        text-align: center;
-        background-color: rgba(0,0,0,0.8);
-        font-size: 24px;
-        user-select: none;
-    }
-    header .youtube {
-        color: red;
-        cursor: pointer;
-        font-weight: bold;
-    }
-    header .search-text {
-        background: linear-gradient(90deg, #ff7eb3, #ff758c, #42a5f5, #7e57c2);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: gradientShift 5s infinite linear;
-        cursor: pointer;
-    }
-    @keyframes gradientShift {
-        0% {background-position: 0%;}
-        100% {background-position: 100%;}
-    }
-    .search-container {
-        display: flex;
-        justify-content: center;
-        padding: 20px;
-        flex-wrap: wrap;
-    }
-    .search-container input, .search-container select {
-        padding: 10px;
-        margin: 5px;
-        font-size: 16px;
-        border: 1px solid #333;
-        background-color: #222;
-        color: white;
-        border-radius: 4px;
-    }
-    .search-container button {
-        padding: 10px 15px;
-        background-color: #ff5722;
-        border: none;
-        color: white;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-    .search-container button:hover {
-        background-color: #e64a19;
-    }
-    #results {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 15px;
-        padding: 20px;
-    }
-    .video-card {
-        background-color: #181818;
-        border-radius: 8px;
-        overflow: hidden;
-        transition: transform 0.2s ease;
-    }
-    .video-card:hover {
-        transform: translateY(-5px);
-    }
-    .video-card img {
-        width: 100%;
-        height: 170px;
-        object-fit: cover;
-    }
-    .video-card h3 {
-        font-size: 16px;
-        margin: 10px;
-    }
-    .video-card p {
-        font-size: 13px;
-        margin: 0 10px 10px;
-        color: #aaa;
-    }
-    #loadingSpinner {
-        display: none;
-        text-align: center;
-        padding: 20px;
-    }
-    .recent-searches {
-        text-align: center;
-        margin-top: 10px;
-        color: #ccc;
-        font-size: 14px;
-    }
-    .recent-searches span {
-        margin: 0 5px;
-        cursor: pointer;
-        text-decoration: underline;
-    }
+  :root{
+    --bg-1:#101114;
+    --bg-2:#0d0f12;
+    --bg-3:#0b0c0f;
+    --card:#181a1f;
+    --muted:#a9b0b8;
+    --accent:#ff4d4f;
+  }
+  /* ===== Base (줄무늬 없는 부드러운 그라데이션 + 디더링 오버레이) ===== */
+  html,body{height:100%}
+  body{
+    margin:0; color:#fff; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background:
+      linear-gradient(180deg,var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-3) 100%);
+    position:relative; overflow-x:hidden;
+  }
+  /* 아주 미세한 패턴 오버레이로 밴딩 제거 */
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none;
+    background-image:
+      radial-gradient(circle at 25% 20%, rgba(255,255,255,.015), transparent 40%),
+      radial-gradient(circle at 75% 80%, rgba(255,255,255,.01), transparent 45%);
+    mix-blend-mode: overlay;
+  }
+
+  /* ===== Header ===== */
+  .header{
+    position:sticky; top:0; z-index:10;
+    backdrop-filter: saturate(120%) blur(6px);
+    background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.35));
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .header-inner{
+    max-width:1100px; margin:0 auto; padding:14px 16px;
+    display:flex; flex-wrap:wrap; align-items:center; gap:12px;
+  }
+  .brand{
+    font-weight:800; font-size:20px; letter-spacing:.2px; user-select:none;
+  }
+  .brand .yt{color:#ff1a1a; cursor:pointer; text-decoration:none}
+  .brand .sep{opacity:.35; margin:0 6px}
+  .brand .searchWord{
+    cursor:pointer; font-weight:800;
+    background: linear-gradient(90deg,#ff8a65, #ffd54f, #64b5f6, #ba68c8, #ff8a65);
+    background-size: 400% 100%;
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    animation: hueShift 8s linear infinite;
+  }
+  @keyframes hueShift { 0%{background-position:0% 0} 100%{background-position:100% 0} }
+
+  /* ===== Search bar + filters ===== */
+  .search-row{
+    flex:1 1 520px; display:flex; gap:8px; align-items:center;
+  }
+  .input{
+    flex:1; min-width:180px;
+    background:#0f1115; border:1px solid rgba(255,255,255,.08);
+    color:#fff; border-radius:10px; padding:12px 14px; font-size:15px;
+    outline:none;
+  }
+  .btn{
+    background:var(--accent); border:none; color:#fff; border-radius:10px;
+    padding:12px 16px; font-weight:700; cursor:pointer;
+  }
+  .btn:disabled{opacity:.6; cursor:not-allowed}
+  .filters{
+    display:flex; gap:8px;
+  }
+  .select{
+    background:#0f1115; border:1px solid rgba(255,255,255,.08);
+    color:#e5e7eb; border-radius:10px; padding:10px 12px; font-size:14px;
+  }
+
+  /* ===== Recent searches ===== */
+  .recent{
+    max-width:1100px; margin:10px auto 0; padding:0 16px 10px; color:var(--muted); font-size:13px;
+  }
+  .chip{
+    display:inline-block; margin:6px 6px 0 0; padding:6px 10px; border-radius:999px;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); cursor:pointer;
+  }
+
+  /* ===== Results (유튜브 느낌: 썸네일 좌, 정보 우) ===== */
+  .container{max-width:1100px; margin:10px auto 80px; padding:0 16px}
+  .result-item{
+    display:grid; grid-template-columns: 360px 1fr; gap:14px;
+    padding:14px; border-radius:14px; background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+  }
+  .thumb{
+    width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#0b0c0f;
+  }
+  .thumb img{ width:100%; height:100%; object-fit:cover; display:block }
+  .meta .title{
+    margin:2px 0 6px; font-size:18px; line-height:1.35; font-weight:800;
+  }
+  .meta .title a{ color:#fff; text-decoration:none }
+  .meta .sub{
+    color:#cbd5e1; font-size:13px; margin-bottom:8px;
+  }
+  .meta .desc{
+    color:#aeb6bf; font-size:14px; line-height:1.5; max-height:4.5em; overflow:hidden;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;
+  }
+
+  /* ===== States ===== */
+  .center-note{ text-align:center; color:var(--muted); padding:22px }
+  .loader{ text-align:center; padding:22px; display:none }
+  .loader .spin{
+    width:38px; height:38px; border-radius:50%;
+    border:4px solid rgba(255,255,255,.35); border-top-color:transparent;
+    margin:0 auto 8px; animation:spin 1s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ===== Responsive ===== */
+  @media (max-width:960px){
+    .result-item{ grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<header>
-    <span class="youtube" onclick="goToYouTube()">YouTube</span>
-    <span class="search-text" onclick="refreshPage()"> 영상 검색</span>
-</header>
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <a class="yt" href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a>
+      <span class="sep">•</span>
+      <span class="searchWord" onclick="location.reload()">영상 검색</span>
+    </div>
 
-<div class="search-container">
-    <input type="text" id="query" placeholder="검색어를 입력하세요...">
-    <select id="dateFilter">
-        <option value="">전체 기간</option>
-        <option value="today">오늘</option>
-        <option value="week">이번 주</option>
-        <option value="month">이번 달</option>
-    </select>
-    <select id="sortFilter">
-        <option value="relevance">관련성</option>
-        <option value="date">업로드 날짜</option>
-        <option value="viewCount">조회수</option>
-    </select>
-    <button onclick="searchVideos(true)">검색</button>
+    <div class="search-row">
+      <input id="query" class="input" placeholder="검색어를 입력하세요…" />
+      <div class="filters">
+        <select id="dateFilter" class="select" title="업로드 시점">
+          <option value="">전체 기간</option>
+          <option value="today">오늘</option>
+          <option value="week">이번 주</option>
+          <option value="month">이번 달</option>
+        </select>
+        <select id="sortFilter" class="select" title="정렬">
+          <option value="relevance">관련성</option>
+          <option value="date">업로드 날짜</option>
+          <option value="viewCount">조회수</option>
+        </select>
+      </div>
+      <button id="searchBtn" class="btn">검색</button>
+    </div>
+  </div>
 </div>
 
-<div class="recent-searches" id="recentSearches"></div>
-<div id="loadingSpinner">⏳ 로딩 중...</div>
-<div id="results"></div>
+<!-- Recent searches -->
+<div class="recent" id="recentWrap"></div>
+
+<!-- Results -->
+<div class="container" id="results"></div>
+<div class="loader" id="loading">
+  <div class="spin"></div>
+  <div>로딩 중…</div>
+</div>
+<div class="center-note" id="stateNote" style="display:none;"></div>
 
 <script>
-const API_KEY = "AIzaSyDB1hVGyJfVBxqaYJ0Xn-DlX7U2hPRpgQ8";
-let nextPageToken = "";
-let currentQuery = "";
-let isLoading = false;
+  // ===== Config =====
+  const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js"; // 필요 시 교체하세요
 
-document.addEventListener("contextmenu", e => e.preventDefault());
-document.addEventListener("keydown", e => {
-    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-        e.preventDefault();
+  // ===== State =====
+  let nextPageToken = "";
+  let currentQuery = "";
+  let isLoading = false;
+
+  // ===== Utils =====
+  const $ = (sel)=>document.querySelector(sel);
+  const resultsEl = $("#results");
+  const loadingEl = $("#loading");
+  const noteEl = $("#stateNote");
+
+  function showLoading(show){
+    loadingEl.style.display = show ? "block" : "none";
+  }
+  function showNote(msg){
+    if(!msg){ noteEl.style.display="none"; noteEl.textContent=""; return; }
+    noteEl.textContent = msg;
+    noteEl.style.display = "block";
+  }
+  function fmtDate(iso){
+    try{
+      const d = new Date(iso);
+      const y = d.getFullYear(), m = d.getMonth()+1, day = d.getDate();
+      return `${y}.${String(m).padStart(2,"0")}.${String(day).padStart(2,"0")}`;
+    }catch{ return ""; }
+  }
+
+  // ===== Recent searches =====
+  function loadRecent(){
+    const list = JSON.parse(localStorage.getItem("recentSearches")||"[]");
+    const wrap = $("#recentWrap");
+    if(!list.length){ wrap.innerHTML=""; return; }
+    wrap.innerHTML = `<span style="margin-right:8px;">최근 검색:</span>` +
+      list.map(q=>`<span class="chip" data-q="${q}">${q}</span>`).join("");
+    wrap.querySelectorAll(".chip").forEach(c=>{
+      c.addEventListener("click", ()=>{
+        $("#query").value = c.dataset.q;
+        search(true);
+      })
+    });
+  }
+  function saveRecent(q){
+    if(!q) return;
+    let list = JSON.parse(localStorage.getItem("recentSearches")||"[]");
+    list = [q, ...list.filter(x=>x!==q)].slice(0,7);
+    localStorage.setItem("recentSearches", JSON.stringify(list));
+    loadRecent();
+  }
+
+  // ===== Build a result row =====
+  function renderItem(item){
+    const vid = item.id.videoId;
+    const sn = item.snippet;
+    const html = `
+      <article class="result-item">
+        <a class="thumb" href="https://www.youtube.com/watch?v=${vid}" target="_blank" rel="noopener">
+          <img src="${sn.thumbnails?.high?.url || sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url}" alt="">
+        </a>
+        <div class="meta">
+          <h3 class="title">
+            <a href="https://www.youtube.com/watch?v=${vid}" target="_blank" rel="noopener">${sn.title}</a>
+          </h3>
+          <div class="sub">
+            <span>${sn.channelTitle || "알 수 없는 채널"}</span>
+            <span style="opacity:.5"> • </span>
+            <span>${fmtDate(sn.publishedAt)}</span>
+          </div>
+          <div class="desc">${sn.description || ""}</div>
+        </div>
+      </article>
+    `;
+    const wrap = document.createElement("div");
+    wrap.innerHTML = html.trim();
+    resultsEl.appendChild(wrap.firstElementChild);
+  }
+
+  // ===== Core search =====
+  async function search(isNew=false){
+    if(isLoading) return;
+    isLoading = true; showLoading(true); showNote("");
+
+    if(isNew){
+      resultsEl.innerHTML = ""; nextPageToken = "";
+      currentQuery = $("#query").value.trim();
     }
-});
-
-function goToYouTube() {
-    window.location.href = "https://www.youtube.com";
-}
-function refreshPage() {
-    location.reload();
-}
-
-function showRecentSearches() {
-    const searches = JSON.parse(localStorage.getItem("recentSearches") || "[]");
-    const container = document.getElementById("recentSearches");
-    container.innerHTML = searches.map(q => `<span onclick="searchFromHistory('${q}')">${q}</span>`).join("");
-}
-function saveSearch(query) {
-    let searches = JSON.parse(localStorage.getItem("recentSearches") || "[]");
-    searches = [query, ...searches.filter(q => q !== query)].slice(0, 5);
-    localStorage.setItem("recentSearches", JSON.stringify(searches));
-}
-function searchFromHistory(query) {
-    document.getElementById("query").value = query;
-    searchVideos(true);
-}
-
-async function searchVideos(isNewSearch = false) {
-    if (isLoading) return;
-    isLoading = true;
-    document.getElementById("loadingSpinner").style.display = "block";
-
-    if (isNewSearch) {
-        document.getElementById("results").innerHTML = "";
-        nextPageToken = "";
-        currentQuery = document.getElementById("query").value.trim();
-        saveSearch(currentQuery);
-    }
-    if (!currentQuery) {
-        document.getElementById("loadingSpinner").style.display = "none";
-        isLoading = false;
-        return;
+    if(!currentQuery){
+      showLoading(false); isLoading=false; return;
     }
 
-    let dateFilter = document.getElementById("dateFilter").value;
+    // 필터
+    const dateFilter = $("#dateFilter").value;
+    const sort = $("#sortFilter").value;
     let publishedAfter = "";
-    if (dateFilter === "today") {
-        publishedAfter = new Date(Date.now() - 24*60*60*1000).toISOString();
-    } else if (dateFilter === "week") {
-        publishedAfter = new Date(Date.now() - 7*24*60*60*1000).toISOString();
-    } else if (dateFilter === "month") {
-        publishedAfter = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+    const now = Date.now();
+    if(dateFilter==="today") publishedAfter = new Date(now-24*60*60*1000).toISOString();
+    else if(dateFilter==="week") publishedAfter = new Date(now-7*24*60*60*1000).toISOString();
+    else if(dateFilter==="month") publishedAfter = new Date(now-30*24*60*60*1000).toISOString();
+
+    let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q=${encodeURIComponent(currentQuery)}&order=${encodeURIComponent(sort)}&key=${API_KEY}`;
+    if(publishedAfter) url += `&publishedAfter=${encodeURIComponent(publishedAfter)}`;
+    if(nextPageToken) url += `&pageToken=${encodeURIComponent(nextPageToken)}`;
+
+    try{
+      const resp = await fetch(url);
+      const data = await resp.json();
+
+      if(data.error){
+        showNote(`API 오류: ${data.error.message}`);
+        return;
+      }
+      const items = data.items || [];
+      if(isNew && !items.length){
+        showNote("검색 결과가 없습니다.");
+        return;
+      }
+      items.forEach(renderItem);
+      nextPageToken = data.nextPageToken || "";
+      if(!nextPageToken){
+        // 더 없음
+        showNote(items.length ? "마지막 결과입니다." : "");
+      }
+
+      if(isNew) saveRecent(currentQuery);
+    }catch(err){
+      console.error(err);
+      showNote("네트워크 오류 또는 CORS 문제입니다. 가능한 경우 Live Server/호스팅에서 실행하세요.");
+    }finally{
+      showLoading(false);
+      isLoading = false;
     }
+  }
 
-    let order = document.getElementById("sortFilter").value;
-
-    let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(currentQuery)}&type=video&maxResults=20&order=${order}&key=${API_KEY}`;
-    if (publishedAfter) url += `&publishedAfter=${publishedAfter}`;
-    if (nextPageToken) url += `&pageToken=${nextPageToken}`;
-
-    try {
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.error) {
-            document.getElementById("results").innerHTML = `<p style="text-align:center;color:red;">API 오류: ${data.error.message}</p>`;
-            return;
-        }
-        if (!data.items.length) {
-            document.getElementById("results").innerHTML = `<p style="text-align:center;color:#aaa;">검색 결과 없음</p>`;
-            return;
-        }
-
-        nextPageToken = data.nextPageToken || "";
-        const results = document.getElementById("results");
-        data.items.forEach(item => {
-            const videoId = item.id.videoId;
-            const videoCard = document.createElement("div");
-            videoCard.className = "video-card";
-            videoCard.innerHTML = `
-                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
-                    <img src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
-                    <h3>${item.snippet.title}</h3>
-                    <p>${item.snippet.description}</p>
-                </a>
-            `;
-            results.appendChild(videoCard);
-        });
-    } catch (err) {
-        console.error(err);
-        document.getElementById("results").innerHTML = `<p style="text-align:center;color:red;">네트워크 오류</p>`;
-    } finally {
-        document.getElementById("loadingSpinner").style.display = "none";
-        isLoading = false;
-        showRecentSearches();
+  // ===== Events =====
+  $("#searchBtn").addEventListener("click", ()=>search(true));
+  $("#query").addEventListener("keydown", (e)=>{
+    if(e.key==="Enter"){ search(true); }
+  });
+  window.addEventListener("scroll", ()=>{
+    if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 120){
+      if(nextPageToken && !isLoading) search(false);
     }
-}
+  });
 
-document.getElementById("query").addEventListener("keypress", e => {
-    if (e.key === "Enter") searchVideos(true);
-});
-window.addEventListener("scroll", () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-        if (nextPageToken) searchVideos(false);
+  // ===== Basic blocking (우클릭/F12 등) =====
+  document.addEventListener("contextmenu", e=>e.preventDefault());
+  document.addEventListener("keydown", e=>{
+    const key = e.key?.toLowerCase();
+    if(e.key==="F12" || (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(key)) || (e.ctrlKey && key==="u")){
+      e.preventDefault();
     }
-});
+  });
 
-showRecentSearches();
+  // init
+  loadRecent();
 </script>
 </body>
 </html>
