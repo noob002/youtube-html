@@ -1,450 +1,190 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>YouTube 영상 검색</title>
 <style>
-  :root{
-    --bg-1:#101114; --bg-2:#0d0f12; --bg-3:#0b0c0f;
-    --card:#181a1f; --muted:#a9b0b8; --accent:#ff4d4f;
-  }
-  html,body{height:100%}
-  body{
-    margin:0; color:#fff;
-    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-    background: linear-gradient(180deg,var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-3) 100%);
-    position:relative; overflow-x:hidden;
-  }
-  /* 미세 오버레이로 그라데이션 밴딩 제거 */
-  body::before{
-    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
-    background-image:
-      radial-gradient(circle at 25% 20%, rgba(255,255,255,.015), transparent 40%),
-      radial-gradient(circle at 75% 80%, rgba(255,255,255,.01), transparent 45%);
-    mix-blend-mode: overlay;
-  }
-
-  /* 헤더 */
-  .header{
-    position:sticky; top:0; z-index:5;
-    backdrop-filter: saturate(120%) blur(6px);
-    background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.35));
-    border-bottom:1px solid rgba(255,255,255,.06);
-  }
-  .header-inner{
-    max-width:1100px; margin:0 auto; padding:14px 16px;
-    display:flex; flex-wrap:wrap; align-items:center; gap:12px;
-  }
-  .brand{font-weight:800; font-size:20px; letter-spacing:.2px; user-select:none;}
-  .brand .yt{color:#ff1a1a; cursor:pointer; text-decoration:none}
-  .brand .sep{opacity:.35; margin:0 6px}
-  .brand .searchWord{
-    cursor:pointer; font-weight:800;
-    background: linear-gradient(90deg,#ff8a65,#ffd54f,#64b5f6,#ba68c8,#ff8a65);
-    background-size: 400% 100%;
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    animation: hueShift 8s linear infinite;
-  }
-  @keyframes hueShift { 0%{background-position:0% 0} 100%{background-position:100% 0} }
-
-  .search-row{ flex:1 1 520px; display:flex; gap:8px; align-items:center; }
-  .input{
-    flex:1; min-width:180px; background:#0f1115; border:1px solid rgba(255,255,255,.08);
-    color:#fff; border-radius:10px; padding:12px 14px; font-size:15px; outline:none;
-  }
-  .btn{
-    background:var(--accent); border:none; color:#fff; border-radius:10px;
-    padding:12px 16px; font-weight:700; cursor:pointer;
-  }
-  .btn:disabled{opacity:.6; cursor:not-allowed}
-  .filters{ display:flex; gap:8px; }
-  .select{
-    background:#0f1115; border:1px solid rgba(255,255,255,.08);
-    color:#e5e7eb; border-radius:10px; padding:10px 12px; font-size:14px;
-  }
-
-  /* 사용량 표시(오른쪽 상단) */
-  .usage{
-    margin-left:auto; display:flex; align-items:center; gap:8px; user-select:none;
-    font-size:12px; color:#e5e7eb;
-  }
-  .usage .dot{width:8px;height:8px;border-radius:999px;background:#18d26e; display:inline-block}
-  .usage.exceeded .dot{background:#ff4d4f}
-
-  /* 최근 검색어 */
-  .recent{ max-width:1100px; margin:8px auto 0; padding:0 16px 8px; color:var(--muted); font-size:13px; }
-  .chip{
-    display:inline-block; margin:6px 6px 0 0; padding:6px 10px; border-radius:999px;
-    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); cursor:pointer;
-  }
-
-  /* 결과 (유튜브 느낌: 썸네일 좌, 정보 우) */
-  .container{ max-width:1100px; margin:10px auto 80px; padding:0 16px; position:relative; z-index:1; }
-  .result-item{
-    display:grid; grid-template-columns: 360px 1fr; gap:14px;
-    padding:14px; border-radius:14px; background:rgba(255,255,255,.03);
-    border:1px solid rgba(255,255,255,.06);
-  }
-  .thumb{ width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#0b0c0f; }
-  .thumb img{ width:100%; height:100%; object-fit:cover; display:block }
-  .meta .title{ margin:2px 0 6px; font-size:18px; line-height:1.35; font-weight:800; }
-  .meta .title a{ color:#fff; text-decoration:none }
-  .meta .sub{ color:#cbd5e1; font-size:13px; margin-bottom:8px; }
-  .meta .desc{
-    color:#aeb6bf; font-size:14px; line-height:1.5; max-height:4.5em; overflow:hidden;
-    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;
-  }
-
-  /* 상태/로딩 */
-  .center-note{ text-align:center; color:var(--muted); padding:22px }
-  .loader{ text-align:center; padding:22px; display:none }
-  .loader .spin{
-    width:38px; height:38px; border-radius:50%;
-    border:4px solid rgba(255,255,255,.35); border-top-color:transparent;
-    margin:0 auto 8px; animation:spin 1s linear infinite;
-  }
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @media (max-width:960px){ .result-item{ grid-template-columns: 1fr; } }
-
-  /* 셧다운 오버레이 */
-  .blackout{
-    position:fixed; inset:0; background:#000; color:#fff; display:flex;
-    align-items:center; justify-content:center; text-align:center; padding:24px;
-    opacity:0; pointer-events:none; transition: opacity .8s ease; z-index:9999;
-  }
-  .blackout.show{ opacity:1; pointer-events:auto; }
-  .blackout .panel{
-    max-width:680px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
-    padding:28px; border-radius:14px;
-  }
-  .blackout h2{ margin:0 0 10px; }
-  .blackout p{ margin:6px 0; color:#d0d6dd }
-  .blackout small{ color:#9aa3ad }
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(180deg, #121212, #1a1a1a);
+        color: white;
+    }
+    header {
+        background-color: #202020;
+        padding: 15px;
+        text-align: center;
+        font-size: 24px;
+    }
+    header .youtube {
+        color: red;
+        cursor: pointer;
+    }
+    header .search-text {
+        background: linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #8b00ff);
+        background-size: 400% 400%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradientShift 5s ease infinite;
+        cursor: pointer;
+    }
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    .search-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+    }
+    .search-container input {
+        padding: 10px;
+        font-size: 16px;
+        width: 300px;
+        border: none;
+        outline: none;
+    }
+    .search-container button {
+        padding: 10px;
+        background: red;
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+    .results {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+        padding: 20px;
+    }
+    .video-card {
+        background: #181818;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    .video-card:hover {
+        transform: scale(1.05);
+    }
+    .video-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+    .quota {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0,0,0,0.7);
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    /* 셧다운 모드 */
+    .shutdown {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(-45deg, #000000, #1a1a1a, #333333, #000000);
+        background-size: 400% 400%;
+        animation: gradientMove 8s ease infinite;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        z-index: 9999;
+    }
+    @keyframes gradientMove {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    .bgm {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        width: 200px;
+        height: 113px;
+        border: none;
+    }
 </style>
 </head>
 <body>
 
-<!-- 헤더 -->
-<div class="header">
-  <div class="header-inner">
-    <div class="brand">
-      <a class="yt" href="https://www.youtube.com" target="_blank" rel="noopener">YouTube</a>
-      <span class="sep">•</span>
-      <span class="searchWord" onclick="location.reload()">영상 검색</span>
-    </div>
+<header>
+    <span class="youtube" onclick="window.location.href='https://www.youtube.com'">YouTube</span>
+    <span class="search-text" onclick="location.reload()"> 영상 검색</span>
+</header>
 
-    <div class="search-row">
-      <input id="query" class="input" placeholder="검색어를 입력하세요…" />
-      <div class="filters">
-        <select id="dateFilter" class="select" title="업로드 시점">
-          <option value="">전체 기간</option>
-          <option value="today">오늘</option>
-          <option value="week">이번 주</option>
-          <option value="month">이번 달</option>
-        </select>
-        <select id="sortFilter" class="select" title="정렬">
-          <option value="relevance">관련성</option>
-          <option value="date">업로드 날짜</option>
-          <option value="viewCount">조회수</option>
-        </select>
-      </div>
-      <button id="searchBtn" class="btn">검색</button>
-    </div>
+<div class="quota" id="quotaDisplay">API 사용량: 확인중...</div>
 
-    <!-- 사용량 표시 -->
-    <div id="usage" class="usage" title="YouTube Data API 추정 사용량">
-      <span class="dot"></span>
-      <span id="usageText">사용량 계산 중…</span>
-    </div>
-  </div>
+<div class="search-container">
+    <input type="text" id="query" placeholder="검색어를 입력하세요..." onkeypress="if(event.key==='Enter') searchVideos()">
+    <button onclick="searchVideos()">검색</button>
 </div>
 
-<!-- 최근 검색어 -->
-<div class="recent" id="recentWrap"></div>
+<div class="results" id="results"></div>
 
-<!-- 결과 -->
-<div class="container" id="results"></div>
-<div class="loader" id="loading">
-  <div class="spin"></div>
-  <div>로딩 중…</div>
-</div>
-<div class="center-note" id="stateNote" style="display:none;"></div>
-
-<!-- 셧다운 오버레이 -->
-<div id="blackout" class="blackout" aria-hidden="true">
-  <div class="panel">
-    <h2>하루 최대 API 사용량을 초과하였습니다</h2>
-    <p>오후 4시에서 5시에 다시 사이트를 방문해 주십시오.</p>
-    <small>※ YouTube Data API 쿼터는 태평양 시간(미국 서부) 자정에 초기화됩니다. 한국 시간으로는 대략 오후 4~5시입니다.</small>
-  </div>
+<div id="shutdownScreen" class="shutdown" style="display:none;">
+    <iframe class="bgm" id="bgmPlayer" src="" allow="autoplay"></iframe>
+    <div>
+        <h2>하루 최대 API 사용량을 초과하였습니다</h2>
+        <p>오후 4시에서 5시에 다시 사이트를 방문해 주십시오.</p>
+        <p>※ YouTube Data API 쿼터는 태평양 시간(미국 서부) 자정에 초기화됩니다.<br>한국 시간으로는 대략 오후 4~5시입니다.</p>
+    </div>
 </div>
 
 <script>
-  /* ========= 설정 ========= */
-  const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js"; // 실제 키로 교체
-  const DAILY_LIMIT_UNITS = 10000;            // Google 기본 쿼터 (변경 시 조정)
-  const SEARCH_LIST_COST = 100;               // search.list 1회 = 100 unit
-  const RESET_HOUR_LOCAL = 16;                // KST 매일 16:00에 “쿼터일” 경계로 사용
+    const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js"; 
+    const MAX_RESULTS = 30;
+    const BGM_VIDEO_ID = "_ouXET8zNI8&list=PLfjw86jyK7sPc4DThVG82uWjk1CuGaOxe&index=5"; // 여기에 영상 ID 입력
 
-  /* ========= 상태 ========= */
-  let nextPageToken = "";
-  let currentQuery = "";
-  let isLoading = false;
-
-  /* ========= 도구 ========= */
-  const $ = (s)=>document.querySelector(s);
-  const resultsEl = $("#results");
-  const loadingEl = $("#loading");
-  const noteEl = $("#stateNote");
-  const usageEl = $("#usage");
-  const usageTextEl = $("#usageText");
-  const blackoutEl = $("#blackout");
-
-  /* 쿼터 Day 스탬프: 매일 16:00을 경계로 날짜 구분 (KST 기준) */
-  function quotaDayStamp(date = new Date()){
-    const d = new Date(date);
-    const hour = d.getHours();
-    // 0~15시는 전날로 귀속
-    if(hour < RESET_HOUR_LOCAL){
-      d.setDate(d.getDate() - 1);
+    function searchVideos() {
+        const query = document.getElementById('query').value.trim();
+        if (!query) return;
+        fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=${MAX_RESULTS}&key=${API_KEY}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error && data.error.errors[0].reason === "quotaExceeded") {
+                    activateShutdownMode();
+                    return;
+                }
+                const results = document.getElementById('results');
+                results.innerHTML = "";
+                data.items.forEach(item => {
+                    const videoCard = document.createElement('div');
+                    videoCard.className = "video-card";
+                    videoCard.innerHTML = `
+                        <a href="https://www.youtube.com/watch?v=${item.id.videoId}" target="_blank">
+                            <img src="${item.snippet.thumbnails.high.url}" alt="${item.snippet.title}">
+                            <h4>${item.snippet.title}</h4>
+                        </a>
+                    `;
+                    results.appendChild(videoCard);
+                });
+            })
+            .catch(err => console.error(err));
     }
-    // yyyymmdd
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    const day = String(d.getDate()).padStart(2,"0");
-    return `${y}${m}${day}`;
-  }
 
-  /* 로컬 사용량 상태 로드/저장 */
-  function loadUsage(){
-    const stamp = quotaDayStamp();
-    const saved = JSON.parse(localStorage.getItem("yt_usage") || "{}");
-    if(saved.stamp !== stamp){
-      return { stamp, usedUnits: 0, exceeded: false, exceededStamp: "" };
+    function activateShutdownMode() {
+        localStorage.removeItem('searchHistory');
+        document.getElementById('bgmPlayer').src = `https://www.youtube.com/embed/${BGM_VIDEO_ID}?autoplay=1&loop=1&playlist=${BGM_VIDEO_ID}`;
+        document.getElementById('shutdownScreen').style.display = "flex";
     }
-    return { stamp: saved.stamp, usedUnits: saved.usedUnits||0, exceeded: !!saved.exceeded, exceededStamp: saved.exceededStamp||"" };
-  }
-  function saveUsage(state){
-    localStorage.setItem("yt_usage", JSON.stringify(state));
-  }
 
-  /* 추정 사용량 UI 업데이트 */
-  function updateUsageUI(){
-    const u = loadUsage();
-    const percent = Math.min(100, Math.round((u.usedUnits/DAILY_LIMIT_UNITS)*100));
-    usageTextEl.textContent = `사용량(추정): ${u.usedUnits} / ${DAILY_LIMIT_UNITS} unit (${percent}%)`;
-    usageEl.classList.toggle("exceeded", u.exceeded || u.usedUnits >= DAILY_LIMIT_UNITS);
-  }
-
-  /* 셧다운 오버레이 on/off */
-  function setBlackout(show){
-    blackoutEl.classList.toggle("show", !!show);
-    blackoutEl.setAttribute("aria-hidden", show ? "false" : "true");
-    // 오버레이 켜진 동안 스크롤/입력 차단
-    if(show){
-      document.body.style.overflow = "hidden";
-    }else{
-      document.body.style.overflow = "";
-    }
-  }
-
-  /* 쿼터 초과 처리 */
-  function triggerQuotaExceeded(){
-    const u = loadUsage();
-    u.exceeded = true;
-    u.exceededStamp = quotaDayStamp();
-    saveUsage(u);
-    updateUsageUI();
-    setBlackout(true);
-  }
-
-  /* 페이지 로드시 만료 확인(다음날 16:00 이후 자동 복구) */
-  function checkAutoRecovery(){
-    const u = loadUsage();
-    // 초과가 아니면 바로 종료
-    if(!u.exceeded){ setBlackout(false); return; }
-
-    const now = new Date();
-    const nowStamp = quotaDayStamp(now);
-    // 쿼터일이 바뀌었고, 현재 시간이 16시 이후면 복구
-    if(nowStamp !== u.exceededStamp && now.getHours() >= RESET_HOUR_LOCAL){
-      u.exceeded = false;
-      u.usedUnits = 0;
-      u.stamp = nowStamp;
-      u.exceededStamp = "";
-      saveUsage(u);
-      setBlackout(false);
-    }else{
-      setBlackout(true);
-    }
-  }
-
-  /* 날짜/형식 도우미 */
-  function fmtDate(iso){
-    try{
-      const d = new Date(iso);
-      const y = d.getFullYear(), m = d.getMonth()+1, day = d.getDate();
-      return `${y}.${String(m).padStart(2,"0")}.${String(day).padStart(2,"0")}`;
-    }catch{ return ""; }
-  }
-
-  /* 최근 검색어 */
-  function loadRecent(){
-    const list = JSON.parse(localStorage.getItem("recentSearches")||"[]");
-    const wrap = $("#recentWrap");
-    if(!list.length){ wrap.innerHTML=""; return; }
-    wrap.innerHTML = `<span style="margin-right:8px;">최근 검색:</span>` +
-      list.map(q=>`<span class="chip" data-q="${q}">${q}</span>`).join("");
-    wrap.querySelectorAll(".chip").forEach(c=>{
-      c.addEventListener("click", ()=>{
-        $("#query").value = c.dataset.q;
-        search(true);
-      })
-    });
-  }
-  function saveRecent(q){
-    if(!q) return;
-    let list = JSON.parse(localStorage.getItem("recentSearches")||"[]");
-    list = [q, ...list.filter(x=>x!==q)].slice(0,7);
-    localStorage.setItem("recentSearches", JSON.stringify(list));
-    loadRecent();
-  }
-
-  /* UI 상태 */
-  function showLoading(show){ loadingEl.style.display = show ? "block" : "none"; }
-  function showNote(msg){
-    if(!msg){ noteEl.style.display="none"; noteEl.textContent=""; return; }
-    noteEl.textContent = msg; noteEl.style.display = "block";
-  }
-
-  /* 결과 렌더 */
-  function renderItem(item){
-    const vid = item.id.videoId;
-    const sn = item.snippet;
-    const html = `
-      <article class="result-item">
-        <a class="thumb" href="https://www.youtube.com/watch?v=${vid}" target="_blank" rel="noopener">
-          <img src="${sn.thumbnails?.high?.url || sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url}" alt="">
-        </a>
-        <div class="meta">
-          <h3 class="title">
-            <a href="https://www.youtube.com/watch?v=${vid}" target="_blank" rel="noopener">${sn.title}</a>
-          </h3>
-          <div class="sub">
-            <span>${sn.channelTitle || "알 수 없는 채널"}</span>
-            <span style="opacity:.5"> • </span>
-            <span>${fmtDate(sn.publishedAt)}</span>
-          </div>
-          <div class="desc">${sn.description || ""}</div>
-        </div>
-      </article>
-    `;
-    const wrap = document.createElement("div");
-    wrap.innerHTML = html.trim();
-    $("#results").appendChild(wrap.firstElementChild);
-  }
-
-  /* ===== 핵심 검색 ===== */
-  async function search(isNew=false){
-    // 셧다운 상태면 막기
-    if(blackoutEl.classList.contains("show")) return;
-
-    const u = loadUsage();
-    if(isNew){
-      $("#results").innerHTML = ""; nextPageToken = "";
-      currentQuery = $("#query").value.trim();
-    }
-    if(!currentQuery) return;
-
-    // 필터
-    const dateFilter = $("#dateFilter").value;
-    const sort = $("#sortFilter").value;
-    let publishedAfter = "";
-    const now = Date.now();
-    if(dateFilter==="today") publishedAfter = new Date(now-24*60*60*1000).toISOString();
-    else if(dateFilter==="week") publishedAfter = new Date(now-7*24*60*60*1000).toISOString();
-    else if(dateFilter==="month") publishedAfter = new Date(now-30*24*60*60*1000).toISOString();
-
-    // 호출 중복 방지
-    if(isLoading) return;
-    isLoading = true; showLoading(true); showNote("");
-
-    let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q=${encodeURIComponent(currentQuery)}&order=${encodeURIComponent(sort)}&key=${API_KEY}`;
-    if(publishedAfter) url += `&publishedAfter=${encodeURIComponent(publishedAfter)}`;
-    if(nextPageToken) url += `&pageToken=${encodeURIComponent(nextPageToken)}`;
-
-    try{
-      const resp = await fetch(url);
-      const data = await resp.json();
-
-      // 사용량(추정) 증가: search.list 1회 = 100 unit
-      const u2 = loadUsage();
-      u2.usedUnits = Math.min(DAILY_LIMIT_UNITS, u2.usedUnits + SEARCH_LIST_COST);
-      u2.stamp = quotaDayStamp();
-      saveUsage(u2);
-      updateUsageUI();
-
-      if(data.error){
-        const msg = (data.error.message||"API 오류");
-        const reason = data.error.errors?.[0]?.reason || "";
-        if(reason === "quotaExceeded" || /quota/i.test(msg)){
-          triggerQuotaExceeded();
-          return;
+    // 우클릭, F12 방지
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key.toUpperCase()))) {
+            e.preventDefault();
         }
-        showNote(`API 오류: ${msg}`);
-        return;
-      }
-
-      const items = data.items || [];
-      if(isNew && !items.length){
-        showNote("검색 결과가 없습니다.");
-        return;
-      }
-      items.forEach(renderItem);
-      nextPageToken = data.nextPageToken || "";
-
-      if(!nextPageToken){
-        showNote(items.length ? "마지막 결과입니다." : "");
-      }
-
-      if(isNew) saveRecent(currentQuery);
-    }catch(err){
-      console.error(err);
-      showNote("네트워크 오류 또는 CORS 문제입니다. 가능한 경우 Live Server/호스팅에서 실행하세요.");
-    }finally{
-      showLoading(false);
-      isLoading = false;
-    }
-  }
-
-  /* ===== 이벤트 ===== */
-  $("#searchBtn").addEventListener("click", ()=>search(true));
-  $("#query").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ search(true); } });
-  window.addEventListener("scroll", ()=>{
-    if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 120){
-      if(nextPageToken && !isLoading) search(false);
-    }
-  });
-
-  // 우클릭/F12 차단(간단 차단)
-  document.addEventListener("contextmenu", e=>e.preventDefault());
-  document.addEventListener("keydown", e=>{
-    const key = e.key?.toLowerCase();
-    if(e.key==="F12" || (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(key)) || (e.ctrlKey && key==="u")){
-      e.preventDefault();
-    }
-  });
-
-  /* ===== 초기화 ===== */
-  (function init(){
-    // 쿼터일 경계 확인 및 복구 판단
-    checkAutoRecovery();
-    // 사용량 표시 업데이트
-    updateUsageUI();
-    // 최근 검색어 로드
-    loadRecent();
-  })();
+    });
 </script>
+
 </body>
 </html>
