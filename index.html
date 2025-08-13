@@ -6,33 +6,28 @@
 <title>YouTube 영상 검색</title>
 <style>
   :root{
-    --bg-1:#101114;
-    --bg-2:#0d0f12;
-    --bg-3:#0b0c0f;
-    --card:#181a1f;
-    --muted:#a9b0b8;
-    --accent:#ff4d4f;
+    --bg-1:#101114; --bg-2:#0d0f12; --bg-3:#0b0c0f;
+    --card:#181a1f; --muted:#a9b0b8; --accent:#ff4d4f;
   }
-  /* ===== Base (줄무늬 없는 부드러운 그라데이션 + 디더링 오버레이) ===== */
   html,body{height:100%}
   body{
-    margin:0; color:#fff; font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-    background:
-      linear-gradient(180deg,var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-3) 100%);
+    margin:0; color:#fff;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    background: linear-gradient(180deg,var(--bg-1) 0%, var(--bg-2) 60%, var(--bg-3) 100%);
     position:relative; overflow-x:hidden;
   }
-  /* 아주 미세한 패턴 오버레이로 밴딩 제거 */
+  /* 미세 오버레이로 그라데이션 밴딩 제거 */
   body::before{
-    content:""; position:fixed; inset:0; pointer-events:none;
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
     background-image:
       radial-gradient(circle at 25% 20%, rgba(255,255,255,.015), transparent 40%),
       radial-gradient(circle at 75% 80%, rgba(255,255,255,.01), transparent 45%);
     mix-blend-mode: overlay;
   }
 
-  /* ===== Header ===== */
+  /* 헤더 */
   .header{
-    position:sticky; top:0; z-index:10;
+    position:sticky; top:0; z-index:5;
     backdrop-filter: saturate(120%) blur(6px);
     background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.35));
     border-bottom:1px solid rgba(255,255,255,.06);
@@ -41,76 +36,67 @@
     max-width:1100px; margin:0 auto; padding:14px 16px;
     display:flex; flex-wrap:wrap; align-items:center; gap:12px;
   }
-  .brand{
-    font-weight:800; font-size:20px; letter-spacing:.2px; user-select:none;
-  }
+  .brand{font-weight:800; font-size:20px; letter-spacing:.2px; user-select:none;}
   .brand .yt{color:#ff1a1a; cursor:pointer; text-decoration:none}
   .brand .sep{opacity:.35; margin:0 6px}
   .brand .searchWord{
     cursor:pointer; font-weight:800;
-    background: linear-gradient(90deg,#ff8a65, #ffd54f, #64b5f6, #ba68c8, #ff8a65);
+    background: linear-gradient(90deg,#ff8a65,#ffd54f,#64b5f6,#ba68c8,#ff8a65);
     background-size: 400% 100%;
     -webkit-background-clip:text; -webkit-text-fill-color:transparent;
     animation: hueShift 8s linear infinite;
   }
   @keyframes hueShift { 0%{background-position:0% 0} 100%{background-position:100% 0} }
 
-  /* ===== Search bar + filters ===== */
-  .search-row{
-    flex:1 1 520px; display:flex; gap:8px; align-items:center;
-  }
+  .search-row{ flex:1 1 520px; display:flex; gap:8px; align-items:center; }
   .input{
-    flex:1; min-width:180px;
-    background:#0f1115; border:1px solid rgba(255,255,255,.08);
-    color:#fff; border-radius:10px; padding:12px 14px; font-size:15px;
-    outline:none;
+    flex:1; min-width:180px; background:#0f1115; border:1px solid rgba(255,255,255,.08);
+    color:#fff; border-radius:10px; padding:12px 14px; font-size:15px; outline:none;
   }
   .btn{
     background:var(--accent); border:none; color:#fff; border-radius:10px;
     padding:12px 16px; font-weight:700; cursor:pointer;
   }
   .btn:disabled{opacity:.6; cursor:not-allowed}
-  .filters{
-    display:flex; gap:8px;
-  }
+  .filters{ display:flex; gap:8px; }
   .select{
     background:#0f1115; border:1px solid rgba(255,255,255,.08);
     color:#e5e7eb; border-radius:10px; padding:10px 12px; font-size:14px;
   }
 
-  /* ===== Recent searches ===== */
-  .recent{
-    max-width:1100px; margin:10px auto 0; padding:0 16px 10px; color:var(--muted); font-size:13px;
+  /* 사용량 표시(오른쪽 상단) */
+  .usage{
+    margin-left:auto; display:flex; align-items:center; gap:8px; user-select:none;
+    font-size:12px; color:#e5e7eb;
   }
+  .usage .dot{width:8px;height:8px;border-radius:999px;background:#18d26e; display:inline-block}
+  .usage.exceeded .dot{background:#ff4d4f}
+
+  /* 최근 검색어 */
+  .recent{ max-width:1100px; margin:8px auto 0; padding:0 16px 8px; color:var(--muted); font-size:13px; }
   .chip{
     display:inline-block; margin:6px 6px 0 0; padding:6px 10px; border-radius:999px;
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); cursor:pointer;
   }
 
-  /* ===== Results (유튜브 느낌: 썸네일 좌, 정보 우) ===== */
-  .container{max-width:1100px; margin:10px auto 80px; padding:0 16px}
+  /* 결과 (유튜브 느낌: 썸네일 좌, 정보 우) */
+  .container{ max-width:1100px; margin:10px auto 80px; padding:0 16px; position:relative; z-index:1; }
   .result-item{
     display:grid; grid-template-columns: 360px 1fr; gap:14px;
     padding:14px; border-radius:14px; background:rgba(255,255,255,.03);
     border:1px solid rgba(255,255,255,.06);
   }
-  .thumb{
-    width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#0b0c0f;
-  }
+  .thumb{ width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#0b0c0f; }
   .thumb img{ width:100%; height:100%; object-fit:cover; display:block }
-  .meta .title{
-    margin:2px 0 6px; font-size:18px; line-height:1.35; font-weight:800;
-  }
+  .meta .title{ margin:2px 0 6px; font-size:18px; line-height:1.35; font-weight:800; }
   .meta .title a{ color:#fff; text-decoration:none }
-  .meta .sub{
-    color:#cbd5e1; font-size:13px; margin-bottom:8px;
-  }
+  .meta .sub{ color:#cbd5e1; font-size:13px; margin-bottom:8px; }
   .meta .desc{
     color:#aeb6bf; font-size:14px; line-height:1.5; max-height:4.5em; overflow:hidden;
     display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;
   }
 
-  /* ===== States ===== */
+  /* 상태/로딩 */
   .center-note{ text-align:center; color:var(--muted); padding:22px }
   .loader{ text-align:center; padding:22px; display:none }
   .loader .spin{
@@ -119,16 +105,27 @@
     margin:0 auto 8px; animation:spin 1s linear infinite;
   }
   @keyframes spin{to{transform:rotate(360deg)}}
+  @media (max-width:960px){ .result-item{ grid-template-columns: 1fr; } }
 
-  /* ===== Responsive ===== */
-  @media (max-width:960px){
-    .result-item{ grid-template-columns: 1fr; }
+  /* 셧다운 오버레이 */
+  .blackout{
+    position:fixed; inset:0; background:#000; color:#fff; display:flex;
+    align-items:center; justify-content:center; text-align:center; padding:24px;
+    opacity:0; pointer-events:none; transition: opacity .8s ease; z-index:9999;
   }
+  .blackout.show{ opacity:1; pointer-events:auto; }
+  .blackout .panel{
+    max-width:680px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+    padding:28px; border-radius:14px;
+  }
+  .blackout h2{ margin:0 0 10px; }
+  .blackout p{ margin:6px 0; color:#d0d6dd }
+  .blackout small{ color:#9aa3ad }
 </style>
 </head>
 <body>
 
-<!-- Header -->
+<!-- 헤더 -->
 <div class="header">
   <div class="header-inner">
     <div class="brand">
@@ -154,13 +151,19 @@
       </div>
       <button id="searchBtn" class="btn">검색</button>
     </div>
+
+    <!-- 사용량 표시 -->
+    <div id="usage" class="usage" title="YouTube Data API 추정 사용량">
+      <span class="dot"></span>
+      <span id="usageText">사용량 계산 중…</span>
+    </div>
   </div>
 </div>
 
-<!-- Recent searches -->
+<!-- 최근 검색어 -->
 <div class="recent" id="recentWrap"></div>
 
-<!-- Results -->
+<!-- 결과 -->
 <div class="container" id="results"></div>
 <div class="loader" id="loading">
   <div class="spin"></div>
@@ -168,29 +171,116 @@
 </div>
 <div class="center-note" id="stateNote" style="display:none;"></div>
 
-<script>
-  // ===== Config =====
-  const API_KEY = "AIzaSyAA3kRQm_Qz63VXnaXBfrFd_I1ncVee3Js"; // 필요 시 교체하세요
+<!-- 셧다운 오버레이 -->
+<div id="blackout" class="blackout" aria-hidden="true">
+  <div class="panel">
+    <h2>하루 최대 API 사용량을 초과하였습니다</h2>
+    <p>오후 4시에서 5시에 다시 사이트를 방문해 주십시오.</p>
+    <small>※ YouTube Data API 쿼터는 태평양 시간(미국 서부) 자정에 초기화됩니다. 한국 시간으로는 대략 오후 4~5시입니다.</small>
+  </div>
+</div>
 
-  // ===== State =====
+<script>
+  /* ========= 설정 ========= */
+  const API_KEY = "AIzaSyDB1hVGyJfVBxqaYJ0Xn-DlX7U2hPRpgQ8"; // 실제 키로 교체
+  const DAILY_LIMIT_UNITS = 10000;            // Google 기본 쿼터 (변경 시 조정)
+  const SEARCH_LIST_COST = 100;               // search.list 1회 = 100 unit
+  const RESET_HOUR_LOCAL = 16;                // KST 매일 16:00에 “쿼터일” 경계로 사용
+
+  /* ========= 상태 ========= */
   let nextPageToken = "";
   let currentQuery = "";
   let isLoading = false;
 
-  // ===== Utils =====
-  const $ = (sel)=>document.querySelector(sel);
+  /* ========= 도구 ========= */
+  const $ = (s)=>document.querySelector(s);
   const resultsEl = $("#results");
   const loadingEl = $("#loading");
   const noteEl = $("#stateNote");
+  const usageEl = $("#usage");
+  const usageTextEl = $("#usageText");
+  const blackoutEl = $("#blackout");
 
-  function showLoading(show){
-    loadingEl.style.display = show ? "block" : "none";
+  /* 쿼터 Day 스탬프: 매일 16:00을 경계로 날짜 구분 (KST 기준) */
+  function quotaDayStamp(date = new Date()){
+    const d = new Date(date);
+    const hour = d.getHours();
+    // 0~15시는 전날로 귀속
+    if(hour < RESET_HOUR_LOCAL){
+      d.setDate(d.getDate() - 1);
+    }
+    // yyyymmdd
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return `${y}${m}${day}`;
   }
-  function showNote(msg){
-    if(!msg){ noteEl.style.display="none"; noteEl.textContent=""; return; }
-    noteEl.textContent = msg;
-    noteEl.style.display = "block";
+
+  /* 로컬 사용량 상태 로드/저장 */
+  function loadUsage(){
+    const stamp = quotaDayStamp();
+    const saved = JSON.parse(localStorage.getItem("yt_usage") || "{}");
+    if(saved.stamp !== stamp){
+      return { stamp, usedUnits: 0, exceeded: false, exceededStamp: "" };
+    }
+    return { stamp: saved.stamp, usedUnits: saved.usedUnits||0, exceeded: !!saved.exceeded, exceededStamp: saved.exceededStamp||"" };
   }
+  function saveUsage(state){
+    localStorage.setItem("yt_usage", JSON.stringify(state));
+  }
+
+  /* 추정 사용량 UI 업데이트 */
+  function updateUsageUI(){
+    const u = loadUsage();
+    const percent = Math.min(100, Math.round((u.usedUnits/DAILY_LIMIT_UNITS)*100));
+    usageTextEl.textContent = `사용량(추정): ${u.usedUnits} / ${DAILY_LIMIT_UNITS} unit (${percent}%)`;
+    usageEl.classList.toggle("exceeded", u.exceeded || u.usedUnits >= DAILY_LIMIT_UNITS);
+  }
+
+  /* 셧다운 오버레이 on/off */
+  function setBlackout(show){
+    blackoutEl.classList.toggle("show", !!show);
+    blackoutEl.setAttribute("aria-hidden", show ? "false" : "true");
+    // 오버레이 켜진 동안 스크롤/입력 차단
+    if(show){
+      document.body.style.overflow = "hidden";
+    }else{
+      document.body.style.overflow = "";
+    }
+  }
+
+  /* 쿼터 초과 처리 */
+  function triggerQuotaExceeded(){
+    const u = loadUsage();
+    u.exceeded = true;
+    u.exceededStamp = quotaDayStamp();
+    saveUsage(u);
+    updateUsageUI();
+    setBlackout(true);
+  }
+
+  /* 페이지 로드시 만료 확인(다음날 16:00 이후 자동 복구) */
+  function checkAutoRecovery(){
+    const u = loadUsage();
+    // 초과가 아니면 바로 종료
+    if(!u.exceeded){ setBlackout(false); return; }
+
+    const now = new Date();
+    const nowStamp = quotaDayStamp(now);
+    // 쿼터일이 바뀌었고, 현재 시간이 16시 이후면 복구
+    if(nowStamp !== u.exceededStamp && now.getHours() >= RESET_HOUR_LOCAL){
+      u.exceeded = false;
+      u.usedUnits = 0;
+      u.stamp = nowStamp;
+      u.exceededStamp = "";
+      saveUsage(u);
+      setBlackout(false);
+    }else{
+      setBlackout(true);
+    }
+  }
+
+  /* 날짜/형식 도우미 */
   function fmtDate(iso){
     try{
       const d = new Date(iso);
@@ -199,7 +289,7 @@
     }catch{ return ""; }
   }
 
-  // ===== Recent searches =====
+  /* 최근 검색어 */
   function loadRecent(){
     const list = JSON.parse(localStorage.getItem("recentSearches")||"[]");
     const wrap = $("#recentWrap");
@@ -221,7 +311,14 @@
     loadRecent();
   }
 
-  // ===== Build a result row =====
+  /* UI 상태 */
+  function showLoading(show){ loadingEl.style.display = show ? "block" : "none"; }
+  function showNote(msg){
+    if(!msg){ noteEl.style.display="none"; noteEl.textContent=""; return; }
+    noteEl.textContent = msg; noteEl.style.display = "block";
+  }
+
+  /* 결과 렌더 */
   function renderItem(item){
     const vid = item.id.videoId;
     const sn = item.snippet;
@@ -245,21 +342,20 @@
     `;
     const wrap = document.createElement("div");
     wrap.innerHTML = html.trim();
-    resultsEl.appendChild(wrap.firstElementChild);
+    $("#results").appendChild(wrap.firstElementChild);
   }
 
-  // ===== Core search =====
+  /* ===== 핵심 검색 ===== */
   async function search(isNew=false){
-    if(isLoading) return;
-    isLoading = true; showLoading(true); showNote("");
+    // 셧다운 상태면 막기
+    if(blackoutEl.classList.contains("show")) return;
 
+    const u = loadUsage();
     if(isNew){
-      resultsEl.innerHTML = ""; nextPageToken = "";
+      $("#results").innerHTML = ""; nextPageToken = "";
       currentQuery = $("#query").value.trim();
     }
-    if(!currentQuery){
-      showLoading(false); isLoading=false; return;
-    }
+    if(!currentQuery) return;
 
     // 필터
     const dateFilter = $("#dateFilter").value;
@@ -270,6 +366,10 @@
     else if(dateFilter==="week") publishedAfter = new Date(now-7*24*60*60*1000).toISOString();
     else if(dateFilter==="month") publishedAfter = new Date(now-30*24*60*60*1000).toISOString();
 
+    // 호출 중복 방지
+    if(isLoading) return;
+    isLoading = true; showLoading(true); showNote("");
+
     let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=24&q=${encodeURIComponent(currentQuery)}&order=${encodeURIComponent(sort)}&key=${API_KEY}`;
     if(publishedAfter) url += `&publishedAfter=${encodeURIComponent(publishedAfter)}`;
     if(nextPageToken) url += `&pageToken=${encodeURIComponent(nextPageToken)}`;
@@ -278,10 +378,24 @@
       const resp = await fetch(url);
       const data = await resp.json();
 
+      // 사용량(추정) 증가: search.list 1회 = 100 unit
+      const u2 = loadUsage();
+      u2.usedUnits = Math.min(DAILY_LIMIT_UNITS, u2.usedUnits + SEARCH_LIST_COST);
+      u2.stamp = quotaDayStamp();
+      saveUsage(u2);
+      updateUsageUI();
+
       if(data.error){
-        showNote(`API 오류: ${data.error.message}`);
+        const msg = (data.error.message||"API 오류");
+        const reason = data.error.errors?.[0]?.reason || "";
+        if(reason === "quotaExceeded" || /quota/i.test(msg)){
+          triggerQuotaExceeded();
+          return;
+        }
+        showNote(`API 오류: ${msg}`);
         return;
       }
+
       const items = data.items || [];
       if(isNew && !items.length){
         showNote("검색 결과가 없습니다.");
@@ -289,8 +403,8 @@
       }
       items.forEach(renderItem);
       nextPageToken = data.nextPageToken || "";
+
       if(!nextPageToken){
-        // 더 없음
         showNote(items.length ? "마지막 결과입니다." : "");
       }
 
@@ -304,18 +418,16 @@
     }
   }
 
-  // ===== Events =====
+  /* ===== 이벤트 ===== */
   $("#searchBtn").addEventListener("click", ()=>search(true));
-  $("#query").addEventListener("keydown", (e)=>{
-    if(e.key==="Enter"){ search(true); }
-  });
+  $("#query").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ search(true); } });
   window.addEventListener("scroll", ()=>{
     if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 120){
       if(nextPageToken && !isLoading) search(false);
     }
   });
 
-  // ===== Basic blocking (우클릭/F12 등) =====
+  // 우클릭/F12 차단(간단 차단)
   document.addEventListener("contextmenu", e=>e.preventDefault());
   document.addEventListener("keydown", e=>{
     const key = e.key?.toLowerCase();
@@ -324,8 +436,15 @@
     }
   });
 
-  // init
-  loadRecent();
+  /* ===== 초기화 ===== */
+  (function init(){
+    // 쿼터일 경계 확인 및 복구 판단
+    checkAutoRecovery();
+    // 사용량 표시 업데이트
+    updateUsageUI();
+    // 최근 검색어 로드
+    loadRecent();
+  })();
 </script>
 </body>
 </html>
